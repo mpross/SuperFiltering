@@ -1,0 +1,151 @@
+This archive is a catalogue of the maximum density evolution
+of 136 supernova core collapse models as described in detail
+in this paper:
+
+1. Dimmelmeier, H., Ott, C.D., Marek, A., and Janka, H.-T.,
+   "The gravitational wave burst signal from stellar core collapse and bounce",
+   Phys. Rev. D, submitted, (2008).
+
+
+
+It contains the following files:
+
+signal_e15a_shen.dat	     signal_e15a_ls.dat	
+signal_e15b_shen.dat	     signal_e15b_ls.dat	
+signal_e20a_shen.dat	     signal_e20a_ls.dat	
+signal_e20b_shen.dat	     signal_e20b_ls.dat	
+signal_s11a1o01_shen.dat     signal_s11a1o01_ls.dat
+signal_s11a1o05_shen.dat     signal_s11a1o05_ls.dat
+signal_s11a1o07_shen.dat     signal_s11a1o07_ls.dat
+signal_s11a1o09_shen.dat     signal_s11a1o09_ls.dat
+signal_s11a1o13_shen.dat     signal_s11a1o13_ls.dat
+signal_s11a2o05_shen.dat     signal_s11a2o05_ls.dat
+signal_s11a2o07_shen.dat     signal_s11a2o07_ls.dat
+signal_s11a2o09_shen.dat     signal_s11a2o09_ls.dat
+signal_s11a2o13_shen.dat     signal_s11a2o13_ls.dat
+signal_s11a2o15_shen.dat     signal_s11a2o15_ls.dat
+signal_s11a3o05_shen.dat     signal_s11a3o05_ls.dat
+signal_s11a3o07_shen.dat     signal_s11a3o07_ls.dat
+signal_s11a3o09_shen.dat     signal_s11a3o09_ls.dat
+signal_s11a3o12_shen.dat     signal_s11a3o12_ls.dat
+signal_s11a3o13_shen.dat     signal_s11a3o13_ls.dat
+signal_s11a3o15_shen.dat     signal_s11a3o15_ls.dat
+signal_s15a1o01_shen.dat     signal_s15a1o01_ls.dat
+signal_s15a1o05_shen.dat     signal_s15a1o05_ls.dat
+signal_s15a1o07_shen.dat     signal_s15a1o07_ls.dat
+signal_s15a1o09_shen.dat     signal_s15a1o09_ls.dat
+signal_s15a1o13_shen.dat     signal_s15a1o13_ls.dat
+signal_s15a2o05_shen.dat     signal_s15a2o05_ls.dat
+signal_s15a2o07_shen.dat     signal_s15a2o07_ls.dat
+signal_s15a2o09_shen.dat     signal_s15a2o09_ls.dat
+signal_s15a2o13_shen.dat     signal_s15a2o13_ls.dat
+signal_s15a2o15_shen.dat     signal_s15a2o15_ls.dat
+signal_s15a3o05_shen.dat     signal_s15a3o05_ls.dat
+signal_s15a3o07_shen.dat     signal_s15a3o07_ls.dat
+signal_s15a3o09_shen.dat     signal_s15a3o09_ls.dat
+signal_s15a3o12_shen.dat     signal_s15a3o12_ls.dat
+signal_s15a3o13_shen.dat     signal_s15a3o13_ls.dat
+signal_s15a3o15_shen.dat     signal_s15a3o15_ls.dat
+signal_s20a1o01_shen.dat     signal_s20a1o01_ls.dat
+signal_s20a1o05_shen.dat     signal_s20a1o05_ls.dat
+signal_s20a1o07_shen.dat     signal_s20a1o07_ls.dat
+signal_s20a1o09_shen.dat     signal_s20a1o09_ls.dat
+signal_s20a1o13_shen.dat     signal_s20a1o13_ls.dat
+signal_s20a2o05_shen.dat     signal_s20a2o05_ls.dat
+signal_s20a2o07_shen.dat     signal_s20a2o07_ls.dat
+signal_s20a2o09_shen.dat     signal_s20a2o09_ls.dat
+signal_s20a2o13_shen.dat     signal_s20a2o13_ls.dat
+signal_s20a2o15_shen.dat     signal_s20a2o15_ls.dat
+signal_s20a3o05_shen.dat     signal_s20a3o05_ls.dat
+signal_s20a3o07_shen.dat     signal_s20a3o07_ls.dat
+signal_s20a3o09_shen.dat     signal_s20a3o09_ls.dat
+signal_s20a3o12_shen.dat     signal_s20a3o12_ls.dat
+signal_s20a3o13_shen.dat     signal_s20a3o13_ls.dat
+signal_s20a3o15_shen.dat     signal_s20a3o15_ls.dat
+signal_s40a1o01_shen.dat     signal_s40a1o01_ls.dat
+signal_s40a1o05_shen.dat     signal_s40a1o05_ls.dat
+signal_s40a1o07_shen.dat     signal_s40a1o07_ls.dat
+signal_s40a1o09_shen.dat     signal_s40a1o09_ls.dat
+signal_s40a1o13_shen.dat     signal_s40a1o13_ls.dat
+signal_s40a2o05_shen.dat     signal_s40a2o05_ls.dat
+signal_s40a2o07_shen.dat     signal_s40a2o07_ls.dat
+signal_s40a2o09_shen.dat     signal_s40a2o09_ls.dat
+signal_s40a2o13_shen.dat     signal_s40a2o13_ls.dat
+signal_s40a2o15_shen.dat     signal_s40a2o15_ls.dat
+signal_s40a3o05_shen.dat     signal_s40a3o05_ls.dat
+signal_s40a3o07_shen.dat     signal_s40a3o07_ls.dat
+signal_s40a3o09_shen.dat     signal_s40a3o09_ls.dat
+signal_s40a3o12_shen.dat     signal_s40a3o12_ls.dat
+signal_s40a3o13_shen.dat     signal_s40a3o13_ls.dat
+signal_s40a3o15_shen.dat     signal_s40a3o15_ls.dat
+
+
+
+
+
+The equation of state used during the evolution is either
+the one of Shen et al. (Shen EoS) or the one by Lattimer
+and Swesty (LS EoS).
+
+The initial model is the presupernova stellar model
+e15a/e15b/e20a/e20b/s11.2/s15/s20/s40, where the
+e15a/e15b/e20a/e20b have an angular momentum distribution
+from stellar evolution calculations, while the
+s11.2/s15/s20/s40 models rotate at prescribed
+different rates with various profiles.
+
+Each collapse model is specified by two parameters, A and O:
+
+A1: A = 5.0 * 10^9 cm
+A2: A = 1.0 * 10^8 cm
+A3: A = 5.0 * 10^7 cm
+
+A1O01: Omega_c,i =  0.45 rad/s
+A1O05: Omega_c,i =  1.01 rad/s
+A1O07: Omega_c,i =  1.43 rad/s
+A1O09: Omega_c,i =  1.91 rad/s
+A1O13: Omega_c,i =  2.71 rad/s
+
+A2O05: Omega_c,i =  2.40 rad/s
+A2O07: Omega_c,i =  3.40 rad/s
+A2O09: Omega_c,i =  4.56 rad/s
+A2O13: Omega_c,i =  6.45 rad/s
+A2O15: Omega_c,i =  7.60 rad/s
+
+A3O05: Omega_c,i =  4.21 rad/s
+A3O07: Omega_c,i =  5.95 rad/s
+A3O09: Omega_c,i =  8.99 rad/s
+A3O12: Omega_c,i = 10.65 rad/s
+A3O13: Omega_c,i = 11.30 rad/s
+A3O15: Omega_c,i = 13.31 rad/s
+
+Only for the s20 model, this corresponds to the following rotation
+rates beta_rot_ini (with the 'old' notation):
+
+O01 --> B0.05: beta_rot_ini = 0.05%
+O05 --> B0.25: beta_rot_ini = 0.25%
+O07 --> B0.50: beta_rot_ini = 0.50%
+O09 --> B0.90: beta_rot_ini = 0.90%
+O12 --> B1.60: beta_rot_ini = 1.60%
+O13 --> B1.80: beta_rot_ini = 1.80%
+O15 --> B2.50: beta_rot_ini = 2.50%
+
+
+
+
+
+All signals have been obtained by using the quadrupole
+'first momentum of momentum density formula',
+
+Column 1 is the coordinate time 't' in units of milliseconds.
+Column 2 is the dimensionless signal amplitude 'h^TT' at a distance
+of 10 kpc with optimal orientation of the source (i.e. measured in
+the equatorial plane).
+
+
+
+This waveform catalogue can be obtained freely from this URL:
+http://www.mpa-garching.mpg.de/rel_hydro/
+
+-----------------------------------------------------------------
+27 February 2008, Harald Dimmelmeier (harrydee@mpa-garching.mpg.de).
