@@ -1,0 +1,4 @@
+Supernova[[:space:]]Waveforms filter=lfs diff=lfs merge=lfs -text
+LIGO[[:space:]]Data filter=lfs diff=lfs merge=lfs -text
+.hdf5 filter=lfs diff=lfs merge=lfs -text
+*.hdf5 filter=lfs diff=lfs merge=lfs -text
