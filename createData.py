@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import h5py
 from os import listdir
 from scipy import signal
+import sys
 
 
 def read_ligo_data():
@@ -72,9 +73,11 @@ def data_cut(x_data, x_time, y_data):
 
 
 gain = 100
-N = 3
 
-for i in range(N):
+start = sys.argv[0]
+end = sys.argv[1]
+
+for i in range(start, end):
 
     waveform_time, waveform_data = read_waveform()
 
