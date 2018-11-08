@@ -1,3 +1,5 @@
+#! /bin/usr/python
+
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
@@ -81,9 +83,17 @@ for i in range(N):
     wave_time, wave_data = data_match(gain*waveform_data, waveform_time, LIGO_time)
     noise_time, noise_data = data_cut(LIGO_data, LIGO_time, wave_data)
 
-    f=open('Data Sets/data'+str(i)+'.dat', 'w+')
+    f=open('Data Sets/signal'+str(i)+'.dat', 'w+')
+
     for j in range(noise_time.size):
         f.write(str(noise_time[j]) + ' ' + str(noise_data[j] + wave_data[j]) + '\n')
+
+    f.close()
+
+    f = open('Data Sets/noise' + str(i) + '.dat', 'w+')
+
+    for j in range(noise_time.size):
+        f.write(str(noise_time[j]) + ' ' + str(noise_data[j]) + '\n')
 
     f.close()
 
