@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 from os import listdir
+from scipy import signal
 
 
 def read_LIGO_data():
@@ -12,7 +13,6 @@ def read_LIGO_data():
     data = np.array(f['strain']['Strain'])
 
     time = np.array(range(data.size))*list(f['strain']['Strain'].attrs.values())[3]
-    print(time.size)
 
     return time, data
 
@@ -23,7 +23,6 @@ def read_waveform():
     files_list = [f for f in listdir(path) if not(f in ignore_list)]
 
     index=np.random.randint(0,files_list.__len__())
-    print(index)
 
     f = open(path+'/'+files_list[index])
     fin = f.read()
@@ -45,9 +44,34 @@ def read_waveform():
     return time, data
 
 
+def data_match(x_data, x_time, y_time):
+
+    # Matches the sampling rate of x to y
+
+    y_sampf = y_time[2] - y_time[1]
+    x_sampf = x_time[2] - x_time[1]
+    out_data = signal.resample(x_data, int(x_sampf / y_sampf * x_data.__len__()))
+    out_time = np.array(range(out_data.__len__())) * x_sampf / int(x_sampf / y_sampf)
+
+    return out_time, out_data
+
+def data_cut(x_data, x_time, y_data):
+
+    # Cuts x down to the same size as y
+
+    length = y_data.size
+    print(length)
+    out_data = x_data[0:length]
+    out_time = x_time[0:length]
+
+    return out_time, out_data
+
+
+
 waveform_time, waveform_data = read_waveform()
 
 LIGO_time, LIGO_data = read_LIGO_data()
 
-plt.plot(LIGO_time, LIGO_data)
-plt.show()
+wave_time, wave_data = data_match(100*waveform_data, waveform_time, LIGO_time)
+noise_time, noise_data = data_cut(LIGO_data, LIGO_time, wave_data)
+
