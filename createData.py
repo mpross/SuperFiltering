@@ -5,7 +5,7 @@ from os import listdir
 from scipy import signal
 
 
-def read_LIGO_data():
+def read_ligo_data():
 
     filename = 'LIGO Data/H-H1_LOSC_4_V1-1135210496-4096.hdf5'
     f = h5py.File(filename, 'r')
@@ -55,23 +55,38 @@ def data_match(x_data, x_time, y_time):
 
     return out_time, out_data
 
+
 def data_cut(x_data, x_time, y_data):
 
-    # Cuts x down to the same size as y
+    # Cuts x down to the same size as y with some random offset
 
     length = y_data.size
-    print(length)
-    out_data = x_data[0:length]
-    out_time = x_time[0:length]
+    offset = np.random.randint(0, x_data.size-length)
+
+    out_data = x_data[offset:length+offset]
+    out_time = x_time[offset:length+offset]
 
     return out_time, out_data
 
 
+gain = 100
+N = 3
 
-waveform_time, waveform_data = read_waveform()
+for i in range(N):
 
-LIGO_time, LIGO_data = read_LIGO_data()
+    waveform_time, waveform_data = read_waveform()
 
-wave_time, wave_data = data_match(100*waveform_data, waveform_time, LIGO_time)
-noise_time, noise_data = data_cut(LIGO_data, LIGO_time, wave_data)
+    LIGO_time, LIGO_data = read_ligo_data()
 
+    wave_time, wave_data = data_match(gain*waveform_data, waveform_time, LIGO_time)
+    noise_time, noise_data = data_cut(LIGO_data, LIGO_time, wave_data)
+
+    f=open('Data Sets/data'+str(i)+'.dat', 'w+')
+    for j in range(noise_time.size):
+        f.write(str(noise_time[j]) + ' ' + str(noise_data[j] + wave_data[j]) + '\n')
+
+    f.close()
+
+# plt.plot(noise_time, noise_data)
+# plt.plot(noise_time, wave_data)
+# plt.show()
