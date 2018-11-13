@@ -56,14 +56,16 @@ def data_match(x_data, x_time, y_time):
     out_data = signal.resample(x_data, int(x_sampf / y_sampf * x_data.__len__()))
     out_time = np.array(range(out_data.__len__())) * x_sampf / int(x_sampf / y_sampf * x_data.__len__())
 
+    out_data = np.pad(out_data, (0, y_time.size-x_time.size), 'constant', constant_values=(0, 0))
+
     return out_time, out_data
 
 
-def data_cut(x_data, x_time, y_data):
+def data_cut(x_data, x_time, seconds):
 
     # Cuts x down to the same size as y with some random offset
 
-    length = y_data.size
+    length = int(seconds/(x_time[2]-x_time[1]))
     offset = np.random.randint(0, x_data.size-length)
 
     out_data = x_data[offset:length+offset]
@@ -77,8 +79,8 @@ gain = 10
 #start = sys.argv[0]
 #end = sys.arg[1]
 
-start = 1
-end = 20
+start = 1000
+end = 1001
 
 for i in range(start, end):
 
@@ -87,7 +89,7 @@ for i in range(start, end):
     LIGO_time, LIGO_data = read_ligo_data()
 
     wave_time, wave_data = data_match(gain*waveform_data, waveform_time, LIGO_time)
-    noise_time, noise_data = data_cut(LIGO_data, LIGO_time, wave_data)
+    noise_time, noise_data = data_cut(LIGO_data, LIGO_time, 1)
 
     f=open('Data Sets/signal'+str(i)+'.dat', 'w+')
 
