@@ -53,9 +53,6 @@ def data_match(x_data, x_time, y_time):
 
     y_sampf = y_time[2] - y_time[1]
     x_sampf = x_time[2] - x_time[1]
-    print(1/x_sampf)
-    print(1/y_sampf)
-    print(int(x_sampf / y_sampf * x_data.__len__()))
     out_data = signal.resample(x_data, int(x_sampf / y_sampf * x_data.__len__()))
     out_time = np.array(range(out_data.__len__())) * x_sampf / int(x_sampf / y_sampf * x_data.__len__())
 
@@ -81,7 +78,7 @@ gain = 10
 #end = sys.arg[1]
 
 start = 1
-end = 2
+end = 20
 
 for i in range(start, end):
 
