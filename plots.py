@@ -36,24 +36,24 @@ plt.figure(1)
 plt.plot(time, wave_data,time,noise_data)
 plt.draw()
 
-f, t, Sxx = signal.spectrogram(wave_data, sampF, 'hann', 10**5, 5*10**4)
+f, t, Sxx = signal.spectrogram(wave_data, sampF, 'hann', 100, 90)
 
 plt.figure(2)
 plt.pcolormesh(t, f, np.log10(Sxx))
 plt.ylabel('Frequency [Hz]')
 plt.xlabel('Time [sec]')
 plt.yscale('log')
-plt.ylim([10**-3, 10**3])
+plt.ylim([10, 10**3])
 plt.draw()
 
-f, t, Sxx = signal.spectrogram(noise_data, sampF, 'hann', 10**5, 5*10**4)
+f, t, Sxx = signal.spectrogram(noise_data, sampF, 'hann', 100, 90)
 
 plt.figure(3)
 plt.pcolormesh(t, f, np.log10(Sxx))
 plt.ylabel('Frequency [Hz]')
 plt.xlabel('Time [sec]')
 plt.yscale('log')
-plt.ylim([10**-3, 10**3])
+plt.ylim([10, 10**3])
 plt.draw()
 
 plt.figure(4)

@@ -36,7 +36,7 @@ def read_waveform():
     data = np.zeros(fsize)
     for i in range(fsize):
         try:
-            time[i] = float(fin[i].split(' ')[0])
+            time[i] = float(fin[i].split(' ')[0])*10**-3
             data[i] = float(fin[i].split(' ')[1])
         except ValueError:
             time[i] = 0
@@ -53,8 +53,11 @@ def data_match(x_data, x_time, y_time):
 
     y_sampf = y_time[2] - y_time[1]
     x_sampf = x_time[2] - x_time[1]
+    print(1/x_sampf)
+    print(1/y_sampf)
+    print(int(x_sampf / y_sampf * x_data.__len__()))
     out_data = signal.resample(x_data, int(x_sampf / y_sampf * x_data.__len__()))
-    out_time = np.array(range(out_data.__len__())) * x_sampf / int(x_sampf / y_sampf)
+    out_time = np.array(range(out_data.__len__())) * x_sampf / int(x_sampf / y_sampf * x_data.__len__())
 
     return out_time, out_data
 
@@ -72,7 +75,7 @@ def data_cut(x_data, x_time, y_data):
     return out_time, out_data
 
 
-gain = 10**4
+gain = 10
 
 #start = sys.argv[0]
 #end = sys.arg[1]
@@ -88,10 +91,6 @@ for i in range(start, end):
 
     wave_time, wave_data = data_match(gain*waveform_data, waveform_time, LIGO_time)
     noise_time, noise_data = data_cut(LIGO_data, LIGO_time, wave_data)
-
-    plt.plot(noise_time, noise_data)
-    plt.plot(noise_time, noise_data+wave_data)
-    plt.show()
 
     f=open('Data Sets/signal'+str(i)+'.dat', 'w+')
 
