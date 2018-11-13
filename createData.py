@@ -72,10 +72,13 @@ def data_cut(x_data, x_time, y_data):
     return out_time, out_data
 
 
-gain = 100
+gain = 10**4
 
-start = sys.argv[0]
-end = sys.argv[1]
+#start = sys.argv[0]
+#end = sys.arg[1]
+
+start = 1
+end = 2
 
 for i in range(start, end):
 
@@ -85,6 +88,10 @@ for i in range(start, end):
 
     wave_time, wave_data = data_match(gain*waveform_data, waveform_time, LIGO_time)
     noise_time, noise_data = data_cut(LIGO_data, LIGO_time, wave_data)
+
+    plt.plot(noise_time, noise_data)
+    plt.plot(noise_time, noise_data+wave_data)
+    plt.show()
 
     f=open('Data Sets/signal'+str(i)+'.dat', 'w+')
 
@@ -100,6 +107,3 @@ for i in range(start, end):
 
     f.close()
 
-# plt.plot(noise_time, noise_data)
-# plt.plot(noise_time, wave_data)
-# plt.show()
