@@ -28,10 +28,18 @@ def read_data(index):
 
     return time, wave_data, noise_data
 
-
+x = np.zeros(4096)
+y = np.array(0)
 for i in range(1, len(os.listdir('./Data Sets/'))):
 
     if os.path.isfile('Data Sets/signal' + str(i) + '.dat'):
         time, wave_data, noise_data = read_data(i)
 
-    print(len(time))
+    x = np.column_stack((x, wave_data))
+    y=np.append(y, 1)
+    x = np.column_stack((x, noise_data))
+    y = np.append(y, 0)
+
+
+print(x.shape)
+print(y.shape)

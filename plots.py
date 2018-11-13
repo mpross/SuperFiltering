@@ -28,7 +28,7 @@ def read_data(index):
     return time, wave_data, noise_data
 
 
-time, wave_data, noise_data = read_data(1000)
+time, wave_data, noise_data = read_data(1)
 
 sampF = 1/(time[1]-time[0])
 
