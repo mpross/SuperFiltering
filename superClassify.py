@@ -28,18 +28,33 @@ def read_data(index):
 
     return time, wave_data, noise_data
 
-x = np.zeros(4096)
-y = np.array(0)
+
+x_train = np.zeros(4096)
+y_train = np.array(0)
+x_test = np.zeros(4096)
+y_test = np.array(0)
+
 for i in range(1, len(os.listdir('./Data Sets/'))):
+    if i<=len(os.listdir('./Data Sets/'))/2:
+        if os.path.isfile('Data Sets/signal' + str(i) + '.dat'):
+            time, wave_data, noise_data = read_data(i)
 
-    if os.path.isfile('Data Sets/signal' + str(i) + '.dat'):
-        time, wave_data, noise_data = read_data(i)
+        x_train = np.column_stack((x_train, wave_data))
+        y_train = np.append(y_train, 1)
+        x_train = np.column_stack((x_train, noise_data))
+        y_train = np.append(y_train, 0)
 
-    x = np.column_stack((x, wave_data))
-    y=np.append(y, 1)
-    x = np.column_stack((x, noise_data))
-    y = np.append(y, 0)
+    if i > len(os.listdir('./Data Sets/')) / 2:
+        if os.path.isfile('Data Sets/signal' + str(i) + '.dat'):
+            time, wave_data, noise_data = read_data(i)
+
+        x_test = np.column_stack((x_test, wave_data))
+        y_test = np.append(y_test, 1)
+        x_test = np.column_stack((x_test, noise_data))
+        y_test = np.append(y_test, 0)
 
 
-print(x.shape)
-print(y.shape)
+print(x_train.shape)
+print(y_train.shape)
+print(x_test.shape)
+print(y_test.shape)
