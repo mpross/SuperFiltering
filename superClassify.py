@@ -7,6 +7,8 @@ import time
 from sklearn.linear_model import LogisticRegression
 from sklearn import svm
 from sklearn.decomposition import PCA
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 
 def read_data(index):
 
@@ -119,14 +121,45 @@ print('Testing Accuracy: ', svmAlg.score(x_test, y_test))
 print('Training Time: ', trainTime, ' s')
 print('Execution Time: ', time.time()-start, ' s')
 
+start = time.time()
+
+NearN = KNeighborsClassifier(1).fit(x_train, y_train.ravel())
+
+trainTime = time.time() - start
+start = time.time()
+
+print('Neural Network')
+print('Training Accuracy: ', NearN.score(x_train, y_train))
+print('Testing Accuracy: ', NearN.score(x_test, y_test))
+print('Training Time: ', trainTime, ' s')
+print('Execution Time: ', time.time()-start, ' s')
+
+
+start = time.time()
+
+NN = MLPClassifier(max_iter=1000).fit(x_train, y_train.ravel())
+
+trainTime = time.time() - start
+start = time.time()
+
+print('Nearest Neighbors')
+print('Training Accuracy: ', NN.score(x_train, y_train))
+print('Testing Accuracy: ', NN.score(x_test, y_test))
+print('Training Time: ', trainTime, ' s')
+print('Execution Time: ', time.time()-start, ' s')
+
 
 pca = PCA(n_components=2).fit(x_train)
 X = pca.transform(x_train)
 
 logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X, y_train.ravel())
 svmAlg = svm.SVC(gamma='scale').fit(X, y_train.ravel())
+NearN = KNeighborsClassifier(1).fit(X, y_train.ravel())
+NN = MLPClassifier(max_iter=1000).fit(X, y_train.ravel())
 
 svd_plot(logReg, 1, 'Logistic Regression')
 svd_plot(svmAlg, 2, 'SVM')
+svd_plot(NearN, 3, 'Nearest Neighbors')
+svd_plot(NN, 4, 'Neural Network')
 
 plt.show()
