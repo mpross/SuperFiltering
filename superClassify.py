@@ -10,61 +10,6 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 
-def read_data(index):
-
-    f = open('Data Sets/signal' + str(index) + '.dat', 'r')
-
-    lines = f.read().split('\n')
-    l = lines.__len__() - 1
-    tim = np.zeros(l)
-    wave_data = np.zeros(l)
-    noise_data = np.zeros(l)
-
-    for i in range(0, l):
-        tim[i] = float(lines[i].split(' ')[0])
-        wave_data[i] = float(lines[i].split(' ')[1])*10**23
-
-    f.close()
-
-    f = open('Data Sets/noise' + str(index) + '.dat', 'r')
-    lines = f.read().split('\n')
-    for i in range(0, l):
-        noise_data[i] = float(lines[i].split(' ')[1])*10**23
-
-    f.close()
-
-    return tim, wave_data, noise_data
-
-
-x_train = np.zeros(129)
-y_train = np.array(0)
-x_test = np.zeros(129)
-y_test = np.array(0)
-
-for i in range(1, len(os.listdir('./Data Sets/'))):
-    if i<=len(os.listdir('./Data Sets/'))/2:
-        if os.path.isfile('Data Sets/signal' + str(i) + '.dat'):
-            tim, wave_data, noise_data = read_data(i)
-
-        f, P1 = signal.welch(noise_data)
-        f, P2 = signal.welch(wave_data)
-
-        x_train = np.column_stack((x_train, np.log10(P2)))
-        y_train = np.append(y_train, 1)
-        x_train = np.column_stack((x_train, np.log10(P1)))
-        y_train = np.append(y_train, -1)
-
-    if i > len(os.listdir('./Data Sets/')) / 2:
-        if os.path.isfile('Data Sets/signal' + str(i) + '.dat'):
-            tim, wave_data, noise_data = read_data(i)
-
-        f, P1 = signal.welch(noise_data)
-        f, P2 = signal.welch(wave_data)
-
-        x_test = np.column_stack((x_test, np.log10(P2)))
-        y_test = np.append(y_test, 1)
-        x_test = np.column_stack((x_test, np.log10(P1)))
-        y_test = np.append(y_test, -1)
 
 
 def svd_plot(alg, index, name):
@@ -90,76 +35,187 @@ def svd_plot(alg, index, name):
     plt.draw()
 
 
-x_train = (x_train[:, 1:].T-np.mean(x_train[:, 1:], axis=1))
-x_test = (x_test[:, 1:].T-np.mean(x_test[:, 1:], axis=1))
-y_train = y_train[1:]
-y_test = y_test[1:]
+def read_data(index, gain):
 
-start = time.time()
+    f = open('Data Sets/Gain'+str(gain)+'/signal' + str(index) + '.dat', 'r')
 
-logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(x_train, y_train.ravel())
+    lines = f.read().split('\n')
+    l = lines.__len__() - 1
+    tim = np.zeros(l)
+    wave_data = np.zeros(l)
+    noise_data = np.zeros(l)
 
-trainTime = time.time() - start
-start = time.time()
+    for i in range(0, l):
 
-print('Logistic Regression')
-print('Training Accuracy: ', logReg.score(x_train, y_train))
-print('Testing Accuracy: ', logReg.score(x_test, y_test))
-print('Training Time: ', trainTime, ' s')
-print('Execution Time: ', time.time()-start, ' s')
+        if not (np.isnan(float(lines[i].split(' ')[1]))):
+            tim[i] = float(lines[i].split(' ')[0])
+            wave_data[i] = float(lines[i].split(' ')[1])*10**25
 
-start = time.time()
+    f.close()
 
-svmAlg = svm.SVC(gamma='scale').fit(x_train, y_train.ravel())
+    f = open('Data Sets/Gain'+str(gain)+'/noise' + str(index) + '.dat', 'r')
+    lines = f.read().split('\n')
+    l = lines.__len__() - 1
+    for i in range(0, l):
+        if not(np.isnan(float(lines[i].split(' ')[1]))):
+            noise_data[i] = float(lines[i].split(' ')[1])*10**25
 
-trainTime = time.time() - start
-start = time.time()
+    f.close()
 
-print('SVM')
-print('Training Accuracy: ', svmAlg.score(x_train, y_train))
-print('Testing Accuracy: ', svmAlg.score(x_test, y_test))
-print('Training Time: ', trainTime, ' s')
-print('Execution Time: ', time.time()-start, ' s')
-
-start = time.time()
-
-NearN = KNeighborsClassifier(1).fit(x_train, y_train.ravel())
-
-trainTime = time.time() - start
-start = time.time()
-
-print('Neural Network')
-print('Training Accuracy: ', NearN.score(x_train, y_train))
-print('Testing Accuracy: ', NearN.score(x_test, y_test))
-print('Training Time: ', trainTime, ' s')
-print('Execution Time: ', time.time()-start, ' s')
+    return tim, wave_data, noise_data
 
 
-start = time.time()
+gainList = np.array((0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 10))
 
-NN = MLPClassifier(max_iter=1000).fit(x_train, y_train.ravel())
+NNAcc = np.zeros(gainList.size)
+NearNAcc = np.zeros(gainList.size)
+logRegAcc = np.zeros(gainList.size)
+SVMAcc = np.zeros(gainList.size)
 
-trainTime = time.time() - start
-start = time.time()
+gainIndex = 0
 
-print('Nearest Neighbors')
-print('Training Accuracy: ', NN.score(x_train, y_train))
-print('Testing Accuracy: ', NN.score(x_test, y_test))
-print('Training Time: ', trainTime, ' s')
-print('Execution Time: ', time.time()-start, ' s')
+for gain in gainList:
+
+    print(str(gainList[gainIndex]))
+    x_train = np.zeros(129)
+    # x_train = np.zeros(4096)
+    y_train = np.array(0)
+    x_test = np.zeros(129)
+    # x_test = np.zeros(4096)
+    y_test = np.array(0)
+
+    for i in range(1, len(os.listdir('./Data Sets/Gain'+str(gain)+'/'))):
+        if i<=len(os.listdir('./Data Sets/Gain'+str(gain)+'/'))/2:
+            if os.path.isfile('Data Sets/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
+                    os.path.isfile('Data Sets/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
+                tim, wave_data, noise_data = read_data(i, gain)
+
+            f, P1 = signal.welch(noise_data)
+            f, P2 = signal.welch(wave_data)
+
+            with np.errstate(divide='raise'):
+                try:
+                    x_train = np.column_stack((x_train, np.log(P2)))
+                    y_train = np.append(y_train, 1)
+                    x_train = np.column_stack((x_train, np.log(P1)))
+                    y_train = np.append(y_train, -1)
+                except FloatingPointError:
+                    print('Error skipping this data point')
+
+        if i > len(os.listdir('./Data Sets/Gain'+str(gain)+'/')) / 2:
+            if os.path.isfile('Data Sets/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
+                    os.path.isfile('Data Sets/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
+                tim, wave_data, noise_data = read_data(i, gain)
+
+            f, P1 = signal.welch(noise_data)
+            f, P2 = signal.welch(wave_data)
+
+            with np.errstate(divide='raise'):
+                try:
+                    x_test = np.column_stack((x_test, np.log(P2)))
+                    y_test = np.append(y_test, 1)
+                    x_test = np.column_stack((x_test, np.log(P1)))
+                    y_test = np.append(y_test, -1)
+                except FloatingPointError:
+                    print('Error skipping this data point')
 
 
-pca = PCA(n_components=2).fit(x_train)
-X = pca.transform(x_train)
+    x_train = (x_train[:, 1:].T-np.mean(x_train[:, 1:], axis=1))
+    x_test = (x_test[:, 1:].T-np.mean(x_test[:, 1:], axis=1))
+    y_train = y_train[1:]
+    y_test = y_test[1:]
 
-logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X, y_train.ravel())
-svmAlg = svm.SVC(gamma='scale').fit(X, y_train.ravel())
-NearN = KNeighborsClassifier(1).fit(X, y_train.ravel())
-NN = MLPClassifier(max_iter=1000).fit(X, y_train.ravel())
+    start = time.time()
 
-svd_plot(logReg, 1, 'Logistic Regression')
-svd_plot(svmAlg, 2, 'SVM')
-svd_plot(NearN, 3, 'Nearest Neighbors')
-svd_plot(NN, 4, 'Neural Network')
+    logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=10000)
+    logReg.fit(x_train, y_train.ravel())
 
-plt.show()
+    trainTime = time.time() - start
+    start = time.time()
+    try:
+        # print('Logistic Regression')
+        # print('Training Accuracy: ', logReg.score(x_train, y_train))
+        # print('Testing Accuracy: ', logReg.score(x_test, y_test))
+        # print('Training Time: ', trainTime, ' s')
+        # print('Execution Time: ', time.time()-start, ' s')
+
+        logRegAcc[gainIndex] = logReg.score(x_test, y_test)
+
+
+        start = time.time()
+
+        svmAlg = svm.SVC(gamma='scale')
+
+        svmAlg.fit(x_train, y_train.ravel())
+
+        trainTime = time.time() - start
+        start = time.time()
+
+        # print('SVM')
+        # print('Training Accuracy: ', svmAlg.score(x_train, y_train))
+        # print('Testing Accuracy: ', svmAlg.score(x_test, y_test))
+        # print('Training Time: ', trainTime, ' s')
+        # print('Execution Time: ', time.time()-start, ' s')
+
+        SVMAcc[gainIndex] = svmAlg.score(x_test, y_test)
+
+        start = time.time()
+
+        NearN = KNeighborsClassifier(10)
+        NearN.fit(x_train, y_train.ravel())
+
+        trainTime = time.time() - start
+        start = time.time()
+
+        # print('Nearest Neighbors')
+        # print('Training Accuracy: ', NearN.score(x_train, y_train))
+        # print('Testing Accuracy: ', NearN.score(x_test, y_test))
+        # print('Training Time: ', trainTime, ' s')
+        # print('Execution Time: ', time.time()-start, ' s')
+
+        NearNAcc[gainIndex] = NearN.score(x_test, y_test)
+
+        start = time.time()
+
+        NN = MLPClassifier(max_iter=10000)
+        NN.fit(x_train, y_train.ravel())
+
+        trainTime = time.time() - start
+        start = time.time()
+
+        # print('Neural Network')
+        # print('Training Accuracy: ', NN.score(x_train, y_train))
+        # print('Testing Accuracy: ', NN.score(x_test, y_test))
+        # print('Training Time: ', trainTime, ' s')
+        # print('Execution Time: ', time.time()-start, ' s')
+
+        NNAcc[gainIndex] = NN.score(x_test, y_test)
+    except ValueError:
+        print('Error')
+
+    gainIndex += 1
+
+plt.figure(10)
+plt.plot(gainList, logRegAcc)
+plt.plot(gainList, SVMAcc)
+plt.plot(gainList, NearNAcc)
+plt.plot(gainList, NNAcc)
+plt.xscale('log')
+plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
+plt.savefig('SimpleAccuracy.pdf')
+
+#
+# pca = PCA(n_components=2).fit(x_train)
+# X = pca.transform(x_train)
+#
+# logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X, y_train.ravel())
+# svmAlg = svm.SVC(gamma='scale').fit(X, y_train.ravel())
+# NearN = KNeighborsClassifier(1).fit(X, y_train.ravel())
+# NN = MLPClassifier(max_iter=1000).fit(X, y_train.ravel())
+#
+# svd_plot(logReg, 1, 'Logistic Regression')
+# svd_plot(svmAlg, 2, 'SVM')
+# svd_plot(NearN, 3, 'Nearest Neighbors')
+# svd_plot(NN, 4, 'Neural Network')
+#
+# plt.show()
