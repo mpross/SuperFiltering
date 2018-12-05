@@ -1,0 +1,30 @@
+Metadata-Version: 2.1
+Name: ligo-common
+Version: 1.0.3
+Summary: Empty LIGO modules
+Home-page: UNKNOWN
+Maintainer: Duncan Macleod
+Maintainer-email: duncan.macleod@ligo.org
+License: GPLv3
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Astronomy
+Classifier: Topic :: Scientific/Engineering :: Physics
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Provides: ligo
+
+Empty module placeholder for other LIGO modules
+
+
