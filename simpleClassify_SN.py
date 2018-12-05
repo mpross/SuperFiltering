@@ -148,7 +148,7 @@ for gain in gainList:
 
 		start = time.time()
 
-		svmAlg = svm.SVC()
+		svmAlg = svm.SVC(gamma='scale')
 
 		svmAlg.fit(x_train, y_train.ravel())
 
@@ -200,15 +200,15 @@ for gain in gainList:
 	gainIndex += 1
 
 plt.figure(10)
-plt.plot(gainList**2, logRegAcc)
-plt.plot(gainList**2, SVMAcc)
-plt.plot(gainList**2, NearNAcc)
-plt.plot(gainList**2, NNAcc)
+plt.plot(gainList, logRegAcc)
+plt.plot(gainList, SVMAcc)
+plt.plot(gainList, NearNAcc)
+plt.plot(gainList, NNAcc)
 plt.xscale('log')
 plt.ylabel('Accuracy')
-plt.xlabel('SNR')
+plt.xlabel('Gain')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
-plt.savefig('SimpleAccuracy.pdf')
+plt.savefig('SimpleAccuracySN.pdf')
 
 plt.figure(11)
 plt.plot(10/gainList, logRegAcc)
@@ -219,7 +219,7 @@ plt.xscale('log')
 plt.ylabel('Accuracy')
 plt.xlabel('Distance (kpc)')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
-plt.savefig('SimpleAccuracyDistance.pdf')
+plt.savefig('SimpleAccuracyDistanceSN.pdf')
 
 
 #
@@ -236,4 +236,4 @@ plt.savefig('SimpleAccuracyDistance.pdf')
 # svd_plot(NearN, 3, 'Nearest Neighbors')
 # svd_plot(NN, 4, 'Neural Network')
 #
-# plt.show()
+plt.show()

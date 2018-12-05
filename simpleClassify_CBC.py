@@ -49,7 +49,7 @@ def read_data(index, gain):
     wave_data = np.zeros(l)
     noise_data = np.zeros(l)
 
-    for i in range(0, l):
+    for i in range(0, l/10):
 
         if not (np.isnan(float(lines[i].split(' ')[1]))):
             tim[i] = float(lines[i].split(' ')[0])
@@ -60,7 +60,7 @@ def read_data(index, gain):
     f = open('CBC Data/Gain'+str(gain)+'/noise' + str(index) + '.dat', 'r')
     lines = f.read().split('\n')
     l = lines.__len__() - 1
-    for i in range(0, l):
+    for i in range(0, l/10):
         if not(np.isnan(float(lines[i].split(' ')[1]))):
             noise_data[i] = float(lines[i].split(' ')[1])*10**25
 
@@ -148,7 +148,7 @@ for gain in gainList:
 
 	start = time.time()
 
-	svmAlg = svm.SVC()
+	svmAlg = svm.SVC(gamma='scale')
 
 	svmAlg.fit(x_train, y_train.ravel())
 
@@ -199,15 +199,15 @@ for gain in gainList:
 	gainIndex += 1
 
 plt.figure(10)
-plt.plot(gainList**2, logRegAcc)
-plt.plot(gainList**2, SVMAcc)
-plt.plot(gainList**2, NearNAcc)
-plt.plot(gainList**2, NNAcc)
+plt.plot(gainList, logRegAcc)
+plt.plot(gainList, SVMAcc)
+plt.plot(gainList, NearNAcc)
+plt.plot(gainList, NNAcc)
 plt.xscale('log')
 plt.ylabel('Accuracy')
-plt.xlabel('SNR')
+plt.xlabel('Gain')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
-plt.savefig('CBCSimpleAccuracy.pdf')
+plt.savefig('SimpleAccuracyCBC.pdf')
 
 plt.figure(11)
 plt.plot(1/gainList, logRegAcc)
@@ -218,7 +218,7 @@ plt.xscale('log')
 plt.ylabel('Accuracy')
 plt.xlabel('Distance (kpc)')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
-plt.savefig('CBCSimpleAccuracyDistance.pdf')
+plt.savefig('SimpleAccuracyDistanceCBC.pdf')
 
 
 #
