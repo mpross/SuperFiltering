@@ -106,7 +106,7 @@ test_labels = torch.from_numpy(y_test[1:]).float()
 net = Net()
 
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=10**-3, momentum=0.5)
+optimizer = optim.SGD(net.parameters(), lr=10**-3, momentum=0.1)
 
 epochLim = 100
 

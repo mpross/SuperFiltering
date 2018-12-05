@@ -68,7 +68,7 @@ y_train = np.array(0)
 x_test = np.zeros(4096)
 y_test = np.array(0)
 
-for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))):
+for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/10):
     if i<=len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2:
         if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
             os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
@@ -106,7 +106,7 @@ test_labels = torch.from_numpy(y_test[1:]).float()
 net = Net()
 
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=10**-3, momentum=0.5)
+optimizer = optim.SGD(net.parameters(), lr=2*10**-3, momentum=0.1)
 
 epochLim = 100
 

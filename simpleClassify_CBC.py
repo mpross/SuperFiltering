@@ -207,6 +207,7 @@ plt.xscale('log')
 plt.ylabel('Accuracy')
 plt.xlabel('Gain')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
+plt.draw()
 plt.savefig('SimpleAccuracyCBC.pdf')
 
 plt.figure(11)
@@ -218,6 +219,7 @@ plt.xscale('log')
 plt.ylabel('Accuracy')
 plt.xlabel('Distance (kpc)')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
+plt.draw()
 plt.savefig('SimpleAccuracyDistanceCBC.pdf')
 
 
