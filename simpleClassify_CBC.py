@@ -49,7 +49,7 @@ def read_data(index, gain):
     wave_data = np.zeros(l)
     noise_data = np.zeros(l)
 
-    for i in range(0, l/10):
+    for i in range(0, l):
 
         if not (np.isnan(float(lines[i].split(' ')[1]))):
             tim[i] = float(lines[i].split(' ')[0])
@@ -60,7 +60,7 @@ def read_data(index, gain):
     f = open('CBC Data/Gain'+str(gain)+'/noise' + str(index) + '.dat', 'r')
     lines = f.read().split('\n')
     l = lines.__len__() - 1
-    for i in range(0, l/10):
+    for i in range(0, l):
         if not(np.isnan(float(lines[i].split(' ')[1]))):
             noise_data[i] = float(lines[i].split(' ')[1])*10**25
 
@@ -110,7 +110,7 @@ for gain in gainList:
 				os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
 					tim, wave_data, noise_data = read_data(i, gain)
 
-		f, P1 = signal.welch(noise_data,fs=4096, nperseg=4096)
+		f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
 		f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
 
 		with np.errstate(divide='raise'):

@@ -11,7 +11,7 @@ import time
 
 def read_data(index, gain):
 
-    f = open('Supernova Data/Gain'+str(gain)+'/signal' + str(index) + '.dat', 'r')
+    f = open('CBC Data/Gain'+str(gain)+'/signal' + str(index) + '.dat', 'r')
 
     lines = f.read().split('\n')
     l = lines.__len__() - 1
@@ -27,7 +27,7 @@ def read_data(index, gain):
 
     f.close()
 
-    f = open('Supernova Data/Gain'+str(gain)+'/noise' + str(index) + '.dat', 'r')
+    f = open('CBC Data/Gain'+str(gain)+'/noise' + str(index) + '.dat', 'r')
     lines = f.read().split('\n')
     l = lines.__len__() - 1
     for i in range(0, l):
@@ -68,10 +68,10 @@ y_train = np.array(0)
 x_test = np.zeros(4096)
 y_test = np.array(0)
 
-for i in range(1, len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))):
-    if i<=len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/2:
-        if os.path.isfile('Supernova Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
-            os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
+for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))):
+    if i<=len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2:
+        if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
+            os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
                 tim, wave_data, noise_data = read_data(i, gain)
 
     with np.errstate(divide='raise'):
@@ -83,9 +83,9 @@ for i in range(1, len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))):
         except FloatingPointError:
             print('Error skipping this data point')
 
-    if i > len(os.listdir('./Supernova Data/Gain'+str(gain)+'/')) / 2:
-        if os.path.isfile('Supernova Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
-            os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
+    if i > len(os.listdir('./CBC Data/Gain'+str(gain)+'/')) / 2:
+        if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
+            os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
                 tim, wave_data, noise_data = read_data(i, gain)
 
     with np.errstate(divide='raise'):
