@@ -70,7 +70,7 @@ def read_data(index, gain):
 	return tim, wave_data, noise_data
 
 
-gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7))#, 0.8, 0.9, 1.0, 10.0))
+gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
 
 NNAcc = np.zeros(gainList.size)
 NearNAcc = np.zeros(gainList.size)

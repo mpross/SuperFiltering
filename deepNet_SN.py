@@ -159,7 +159,7 @@ for epoch in range(epochLim):
 
 print('Finished Training')
 
-gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7))#, 0.8, 0.9, 1.0, 10.0))
+gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
 
 gainAcc = np.zeros(gainList.size)
 gainIndex = 0
@@ -207,7 +207,7 @@ plt.xscale('log')
 plt.ylabel('Accuracy')
 plt.xlabel('Gain')
 plt.draw()
-plt.savefig('SNAccuracyCBC.pdf')
+plt.savefig('NNAccuracySN.pdf')
 
 plt.figure()
 plt.plot(1/gainList, gainAcc)
@@ -215,7 +215,7 @@ plt.xscale('log')
 plt.ylabel('Accuracy')
 plt.xlabel('Distance (Mpc)')
 plt.draw()
-plt.savefig('SNAccuracyDistanceCBC.pdf')
+plt.savefig('NNAccuracyDistanceSN.pdf')
 
 plt.figure()
 plt.plot(range(epochLim), trainAcc)
@@ -224,5 +224,5 @@ plt.legend(('Training', 'Testing'))
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
 plt.draw()
-plt.savefig('SNTraining.pdf')
+plt.savefig('NNTrainingSN.pdf')
 plt.show()

@@ -45,22 +45,22 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.conv1 = nn.Conv1d(1, 32, 32)
         self.pool = nn.MaxPool1d(4)
-        self.fc1 = nn.Linear(16128, 1)
+        self.fc1 = nn.Linear(3840, 1)
         self.out = nn.Sigmoid()
 
     def forward(self, x):
-        x = x.expand(1, 1, 2049)
+        x = x.expand(1, 1, 513)
         x = self.pool(F.relu(self.conv1(x)))
-        x = x.view(-1, 16128)
+        x = x.view(-1, 3840)
         x = self.fc1(x)
         x = self.out(x)
         return x
 
-gain = 0.1
+gain = 0.01
 
-x_train = np.zeros(2049)
+x_train = np.zeros(513)
 y_train = np.array(0)
-x_test = np.zeros(2049)
+x_test = np.zeros(513)
 y_test = np.array(0)
 
 for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
@@ -70,8 +70,8 @@ for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
 
         tim, wave_data, noise_data = read_data(i, gain)
 
-        f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
-        f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+        f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096/4)
+        f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096/4)
 
         with np.errstate(divide='raise'):
 
@@ -91,8 +91,8 @@ for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
 
         tim, wave_data, noise_data = read_data(i, gain)
 
-        f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
-        f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+        f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096/4)
+        f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096/4)
 
         with np.errstate(divide='raise'):
 
@@ -110,9 +110,9 @@ test_labels = torch.from_numpy(y_test[1:]).float()
 net = Net()
 
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=10**-5, momentum=0.1)
+optimizer = optim.SGD(net.parameters(), lr=10**-6, momentum=0.1)
 
-epochLim = 10
+epochLim = 25
 
 testAcc = np.zeros(epochLim)
 trainAcc = np.zeros(epochLim)
@@ -157,7 +157,7 @@ for epoch in range(epochLim):
 print('Finished Training')
 
 
-gainList = np.array((0.001, 0.002, 0.003, 0.004, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
+gainList = np.array((0.001, 0.002, 0.003, 0.004, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
 					 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
 #, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009,
 
@@ -166,15 +166,15 @@ gainIndex = 0
 
 for gain in gainList:
 
-    x_test = np.zeros(2049)
+    x_test = np.zeros(513)
     y_test = np.array(0)
 
     for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
 
             tim, wave_data, noise_data = read_data(i, gain)
 
-            f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
-            f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+            f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096/4)
+            f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096/4)
 
             with np.errstate(divide='raise'):
 
@@ -201,22 +201,22 @@ for gain in gainList:
 
     gainIndex += 1
 
-for filename in os.listdir('GW Events'):
-
-    f = h5py.File('GW Events/'+filename, 'r')
-    data = np.array(f['strain']['Strain'])
-    f.close()
-    predicted = 0.0
-    for i in range(0, len(data), 4096):
-        f, P = signal.welch(data[i:i+4096], fs=4096, nperseg=4096)
-
-        x = torch.from_numpy((np.log10(P) - np.mean(np.log10(P))) / np.std(np.log10(P))).float()
-
-        with torch.no_grad():
-            output = net(x)
-            predicted += round(float(output.data))
-
-    print(predicted)
+# for filename in os.listdir('GW Events'):
+#
+#     f = h5py.File('GW Events/'+filename, 'r')
+#     data = np.array(f['strain']['Strain'])
+#     f.close()
+#     predicted = 0.0
+#     for i in range(0, len(data), 4096):
+#         f, P = signal.welch(data[i:i+4096], fs=4096, nperseg=4096/4)
+#
+#         x = torch.from_numpy((np.log10(P) - np.mean(np.log10(P))) / np.std(np.log10(P))).float()
+#
+#         with torch.no_grad():
+#             output = net(x)
+#             predicted += round(float(output.data))
+#
+#     print(predicted)
 
 plt.figure()
 plt.plot(gainList, gainAcc)
@@ -241,5 +241,5 @@ plt.legend(('Training', 'Testing'))
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
 plt.draw()
-plt.savefig('NNTraining.pdf')
+plt.savefig('NNTrainingCBC.pdf')
 plt.show()
