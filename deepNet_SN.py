@@ -68,8 +68,8 @@ y_train = np.array(0)
 x_test = np.zeros(2049)
 y_test = np.array(0)
 
-for i in range(1, len(os.listdir('./Supernova Data/Gain' + str(gain) + '/'))):
-    if i <= len(os.listdir('./Supernova Data/Gain' + str(gain) + '/')) / 2:
+for i in range(1, len(os.listdir('./Supernova Data/Gain' + str(gain) + '/'))/2+1):
+    if i <= len(os.listdir('./Supernova Data/Gain' + str(gain) + '/')) / 4:
         if os.path.isfile('Supernova Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
                 os.path.isfile('Supernova Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
             tim, wave_data, noise_data = read_data(i, gain)
@@ -86,7 +86,7 @@ for i in range(1, len(os.listdir('./Supernova Data/Gain' + str(gain) + '/'))):
             except FloatingPointError:
                 print('Error skipping this data point')
 
-    if i > len(os.listdir('./Supernova Data/Gain' + str(gain) + '/')) / 2:
+    if i > len(os.listdir('./Supernova Data/Gain' + str(gain) + '/')) / 4:
         if os.path.isfile('Supernova Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
                 os.path.isfile('Supernova Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
             tim, wave_data, noise_data = read_data(i, gain)
@@ -136,8 +136,7 @@ for epoch in range(epochLim):
                   (epoch + 1, i + 1, running_loss / 10))
             running_loss = 0.0
 
-    correct = 0
-    total = 0
+    correct = 0.0
     with torch.no_grad():
         for j in range(len(test_data)):
             output = net(test_data[j])
@@ -148,8 +147,7 @@ for epoch in range(epochLim):
             100 * correct / test_labels.size(0)))
     testAcc[epoch] = 100 * correct / test_labels.size(0)
 
-    correct = 0
-    total = 0
+    correct = 0.0
     with torch.no_grad():
         for j in range(len(train_data)):
             outputs = net(train_data[j])

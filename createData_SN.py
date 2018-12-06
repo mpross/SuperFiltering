@@ -12,10 +12,12 @@ def read_ligo_data():
 
     filename = 'LIGO Data/H-H1_LOSC_4_V1-1135210496-4096.hdf5'
     f = h5py.File(filename, 'r')
-
     data = np.array(f['strain']['Strain'])
 
     time = np.array(range(data.size))*list(f['strain']['Strain'].attrs.values())[3]
+
+
+    f.close()
 
     return time, data
 
@@ -75,32 +77,33 @@ def data_cut(x_data, x_time, seconds):
 
 gainList = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0]
 
-start = int(sys.argv[1])
-end = int(sys.argv[2])
+# start = int(sys.argv[1])
+# end = int(sys.argv[2])
 
-#start = 1000
-#end = 1001
+start = 1
+end = 139
+
 for gain in gainList:
-	for i in range(start, end):
+    for i in range(start, end):
+        print(i)
+        waveform_time, waveform_data = read_waveform()
 
-		waveform_time, waveform_data = read_waveform()
+        LIGO_time, LIGO_data = read_ligo_data()
 
-		LIGO_time, LIGO_data = read_ligo_data()
+        wave_time, wave_data = data_match(gain*waveform_data, waveform_time, LIGO_time)
+        noise_time, noise_data = data_cut(LIGO_data, LIGO_time, 1)
 
-		wave_time, wave_data = data_match(gain*waveform_data, waveform_time, LIGO_time)
-		noise_time, noise_data = data_cut(LIGO_data, LIGO_time, 1)
+        f=open('Supernova Data/Gain'+str(gain)+'/signal'+str(i)+'.dat', 'w+')
 
-		f=open('Supernova Data/Gain'+str(gain)+'/signal'+str(i)+'.dat', 'w+')
+        for j in range(len(wave_time)-1):
+            f.write(str(wave_time[j]) + ' ' + str(wave_data[j]+noise_data[j]) + '\n')
 
-		for j in range(noise_time.size):
-			f.write(str(noise_time[j]) + ' ' + str(noise_data[j] + wave_data[j]) + '\n')
+        f.close()
 
-		f.close()
+        f = open('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat', 'w+')
 
-		f = open('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat', 'w+')
+        for j in range(len(noise_time)-1):
+            f.write(str(noise_time[j]) + ' ' + str(noise_data[j]) + '\n')
 
-		for j in range(noise_time.size):
-			f.write(str(noise_time[j]) + ' ' + str(noise_data[j]) + '\n')
-
-		f.close()
+        f.close()
 

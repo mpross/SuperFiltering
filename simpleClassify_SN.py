@@ -88,8 +88,8 @@ for gain in gainList:
 	x_test = np.zeros(2049)
 	y_test = np.array(0)
 
-	for i in range(1, len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))):
-		if i<=len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/2:
+	for i in range(1, len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/2+1):
+		if i<=len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/4:
 			if os.path.isfile('Supernova Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
 				os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
 					tim, wave_data, noise_data = read_data(i, gain)
@@ -106,7 +106,7 @@ for gain in gainList:
 				except FloatingPointError:
 					print('Error skipping this data point')
 
-		if i > len(os.listdir('./Supernova Data/Gain'+str(gain)+'/')) / 2:
+		if i > len(os.listdir('./Supernova Data/Gain'+str(gain)+'/')) / 4:
 			if os.path.isfile('Supernova Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
 				os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
 					tim, wave_data, noise_data = read_data(i, gain)

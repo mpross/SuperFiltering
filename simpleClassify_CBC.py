@@ -69,8 +69,10 @@ def read_data(index, gain):
     return tim, wave_data, noise_data
 
 
-gainList = np.array((0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
-# .01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08 ,0.09,
+gainList = np.array((0.001, 0.002, #0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009,
+					 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
+					 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
+#
 NNAcc = np.zeros(gainList.size)
 NearNAcc = np.zeros(gainList.size)
 logRegAcc = np.zeros(gainList.size)
@@ -87,12 +89,11 @@ for gain in gainList:
 	#x_test = np.zeros(129)
 	x_test = np.zeros(2049)
 	y_test = np.array(0)
-
-	for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/')),10):
-		if i<=len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2:
-			if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
-				os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
-					tim, wave_data, noise_data = read_data(i, gain)
+	for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
+		if i<=len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/4:
+			# if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
+			# 	os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
+			tim, wave_data, noise_data = read_data(i, gain)
 
 			f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
 			f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
@@ -105,10 +106,10 @@ for gain in gainList:
 				y_train = np.append(y_train, -1)
 			
 
-		if i > len(os.listdir('./CBC Data/Gain'+str(gain)+'/')) / 2:
-			if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
-				os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
-					tim, wave_data, noise_data = read_data(i, gain)
+		if i > len(os.listdir('./CBC Data/Gain'+str(gain)+'/')) / 4:
+			# if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
+			# 	os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
+			tim, wave_data, noise_data = read_data(i, gain)
 
 			f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
 			f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
@@ -135,7 +136,7 @@ for gain in gainList:
 	svmAlg.fit(x_train, y_train.ravel())
 	SVMAcc[gainIndex] = svmAlg.score(x_test, y_test)
 
-	NearN = KNeighborsClassifier(10)
+	NearN = KNeighborsClassifier(3)
 	NearN.fit(x_train, y_train.ravel())
 	NearNAcc[gainIndex] = NearN.score(x_test, y_test)
 
@@ -165,7 +166,7 @@ plt.plot(1/gainList, NearNAcc)
 plt.plot(1/gainList, NNAcc)
 plt.xscale('log')
 plt.ylabel('Accuracy')
-plt.xlabel('Distance (kpc)')
+plt.xlabel('Distance (Mpc)')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
 plt.draw()
 plt.savefig('SimpleAccuracyDistanceCBC.pdf')

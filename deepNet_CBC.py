@@ -55,24 +55,19 @@ class Net(nn.Module):
         x = self.out(x)
         return x
 
-
-gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
-
-
-gainIndex = 0
-
-gain = 10.0
+gain = 0.001
 
 x_train = np.zeros(2049)
 y_train = np.array(0)
 x_test = np.zeros(2049)
 y_test = np.array(0)
 
-for i in range(1, len(os.listdir('./CBC Data/Gain' + str(gain) + '/'))):
-    if i <= len(os.listdir('./CBC Data/Gain' + str(gain) + '/')) / 2:
-        if os.path.isfile('CBC Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
-                os.path.isfile('CBC Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
-            tim, wave_data, noise_data = read_data(i, gain)
+for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
+    if i <= len(os.listdir('./CBC Data/Gain' + str(gain) + '/')) / 4:
+        # if os.path.isfile('CBC Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
+        #         os.path.isfile('CBC Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
+
+        tim, wave_data, noise_data = read_data(i, gain)
 
         f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
         f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
@@ -83,11 +78,21 @@ for i in range(1, len(os.listdir('./CBC Data/Gain' + str(gain) + '/'))):
             y_train = np.append(y_train, 1)
             x_train = np.column_stack((x_train, np.log10(P1.T)))
             y_train = np.append(y_train, 0)
+            #
+            # x_train = np.column_stack((x_train, wave_data))
+            # y_train = np.append(y_train, 1)
+            # x_train = np.column_stack((x_train, noise_data))
+            # y_train = np.append(y_train, 0)
 
-    if i > len(os.listdir('./CBC Data/Gain' + str(gain) + '/')) / 2:
-        if os.path.isfile('CBC Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
-                os.path.isfile('CBC Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
-            tim, wave_data, noise_data = read_data(i, gain)
+    if i > len(os.listdir('./CBC Data/Gain' + str(gain) + '/')) / 4:
+        # if os.path.isfile('CBC Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
+        #         os.path.isfile('CBC Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
+
+        tim, wave_data, noise_data = read_data(i, gain)
+
+        if i==600:
+            plt.plot(tim, wave_data, tim, noise_data)
+            plt.show()
 
         f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
         f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
@@ -108,9 +113,9 @@ test_labels = torch.from_numpy(y_test[1:]).float()
 net = Net()
 
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=10**-2, momentum=0.1)
+optimizer = optim.SGD(net.parameters(), lr=10**-3, momentum=0.1)
 
-epochLim = 100
+epochLim = 10
 
 testAcc = np.zeros(epochLim)
 trainAcc = np.zeros(epochLim)
@@ -132,8 +137,7 @@ for epoch in range(epochLim):
                   (epoch + 1, i + 1, running_loss / 100))
             running_loss = 0.0
 
-    correct = 0
-    total = 0
+    correct = 0.0
     with torch.no_grad():
         for j in range(len(test_data)):
             output = net(test_data[j])
@@ -144,8 +148,7 @@ for epoch in range(epochLim):
             100 * correct / test_labels.size(0)))
     testAcc[epoch] = 100 * correct / test_labels.size(0)
 
-    correct = 0
-    total = 0
+    correct = 0.0
     with torch.no_grad():
         for j in range(len(train_data)):
             outputs = net(train_data[j])
@@ -158,6 +161,68 @@ for epoch in range(epochLim):
     trainAcc[epoch] = 100 * correct / train_labels.size(0)
 
 print('Finished Training')
+
+
+gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
+					 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
+#0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009,
+
+gainAcc = np.zeros(gainList.size)
+gainIndex = 0
+
+for gain in gainList:
+
+    x_test = np.zeros(2049)
+    y_test = np.array(0)
+
+    for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
+
+            tim, wave_data, noise_data = read_data(i, gain)
+
+            f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
+            f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+
+            with np.errstate(divide='raise'):
+
+                x_test = np.column_stack((x_test, np.log10(P2.T)))
+                y_test = np.append(y_test, 1)
+                x_test = np.column_stack((x_test, np.log10(P1.T)))
+                y_test = np.append(y_test, 0)
+
+
+    test_data = torch.from_numpy(
+        (x_test[:, 1:].T - np.mean(x_test[:, 1:], axis=1)) / np.std(x_test[:, 1:])).float()
+    test_labels = torch.from_numpy(y_test[1:]).float()
+
+    correct = 0.0
+    with torch.no_grad():
+        for j in range(len(test_data)):
+            output = net(test_data[j])
+            predicted = round(output.data)
+            correct += (predicted == test_labels[j]).item()
+
+    print('Accuracy on '+str(1/gain)+' Mpc dataset: %d %%' % (
+            100 * correct / test_labels.size(0)))
+    gainAcc[gainIndex] = 100 * correct / test_labels.size(0)
+
+    gainIndex += 1
+
+
+plt.figure()
+plt.plot(gainList, gainAcc)
+plt.xscale('log')
+plt.ylabel('Accuracy')
+plt.xlabel('Gain')
+plt.draw()
+plt.savefig('NNAccuracyCBC.pdf')
+
+plt.figure()
+plt.plot(1/gainList, gainAcc)
+plt.xscale('log')
+plt.ylabel('Accuracy')
+plt.xlabel('Distance (Mpc)')
+plt.draw()
+plt.savefig('NNAccuracyDistanceCBC.pdf')
 
 plt.figure()
 plt.plot(range(epochLim), trainAcc)
