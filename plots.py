@@ -4,7 +4,7 @@ from scipy import signal
 
 def read_data(index):
 
-    f = open('CBC Data/Gain10.0/signal' + str(index) + '.dat', 'r')
+    f = open('CBC Data/Gain1.0/signal' + str(index) + '.dat', 'r')
 
     lines = f.read().split('\n')
     l = lines.__len__() - 1
@@ -18,7 +18,7 @@ def read_data(index):
 
     f.close()
 
-    f = open('CBC Data/Gain10.0/noise' + str(index) + '.dat', 'r')
+    f = open('CBC Data/Gain1.0/noise' + str(index) + '.dat', 'r')
     lines = f.read().split('\n')
     for i in range(0, l):
         noise_data[i] = float(lines[i].split(' ')[1])
@@ -28,7 +28,7 @@ def read_data(index):
     return time, wave_data, noise_data
 
 
-time, wave_data, noise_data = read_data(19)
+time, wave_data, noise_data = read_data(np.random.randint(1,999))
 
 
 sampF = 1/(time[1]-time[0])

@@ -69,7 +69,7 @@ def read_data(index, gain):
     return tim, wave_data, noise_data
 
 
-gainList = np.array((0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 10))
+gainList = np.array((0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
 # .01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08 ,0.09,
 NNAcc = np.zeros(gainList.size)
 NearNAcc = np.zeros(gainList.size)
@@ -88,21 +88,21 @@ for gain in gainList:
 	x_test = np.zeros(2049)
 	y_test = np.array(0)
 
-	for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))):
+	for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/')),10):
 		if i<=len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2:
 			if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
 				os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
 					tim, wave_data, noise_data = read_data(i, gain)
 
-		f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
-		f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+			f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
+			f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
 
-		with np.errstate(divide='raise'):
-			
-			x_train = np.column_stack((x_train, np.log10(P2.T)))
-			y_train = np.append(y_train, 1)
-			x_train = np.column_stack((x_train, np.log10(P1.T)))
-			y_train = np.append(y_train, -1)
+			with np.errstate(divide='raise'):
+
+				x_train = np.column_stack((x_train, np.log10(P2.T)))
+				y_train = np.append(y_train, 1)
+				x_train = np.column_stack((x_train, np.log10(P1.T)))
+				y_train = np.append(y_train, -1)
 			
 
 		if i > len(os.listdir('./CBC Data/Gain'+str(gain)+'/')) / 2:
@@ -110,95 +110,43 @@ for gain in gainList:
 				os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
 					tim, wave_data, noise_data = read_data(i, gain)
 
-		f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
-		f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+			f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
+			f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
 
-		with np.errstate(divide='raise'):
-			
-			x_test = np.column_stack((x_test, np.log10(P2.T)))
-			y_test = np.append(y_test, 1)
-			x_test = np.column_stack((x_test, np.log10(P1.T)))
-			y_test = np.append(y_test, -1)
-			
+			with np.errstate(divide='raise'):
 
+				x_test = np.column_stack((x_test, np.log10(P2.T)))
+				y_test = np.append(y_test, 1)
+				x_test = np.column_stack((x_test, np.log10(P1.T)))
+				y_test = np.append(y_test, -1)
 
-	x_train = (x_train[:, 1:]-np.mean(x_train[:, 1:])).T
-	x_test = (x_test[:, 1:]-np.mean(x_test[:, 1:])).T
+	x_train = (x_train[:, 1:].T - np.mean(x_train[:, 1:], axis=1)) / np.std(x_train)
+	x_test = (x_test[:, 1:].T - np.mean(x_test[:, 1:], axis=1)) / np.std(x_test)
 	y_train = y_train[1:]
 	y_test = y_test[1:]
 
 
-		
-	start = time.time()
-
 	logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=10000)
 	logReg.fit(x_train, y_train.ravel())
-
-	trainTime = time.time() - start
-	start = time.time()
-	
-        # print('Logistic Regression')
-        # print('Training Accuracy: ', logReg.score(x_train, y_train))
-        # print('Testing Accuracy: ', logReg.score(x_test, y_test))
-        # print('Training Time: ', trainTime, ' s')
-        # print('Execution Time: ', time.time()-start, ' s')
-
 	logRegAcc[gainIndex] = logReg.score(x_test, y_test)
 
 
-	start = time.time()
-
 	svmAlg = svm.SVC(gamma='scale')
-
 	svmAlg.fit(x_train, y_train.ravel())
-
-	trainTime = time.time() - start
-	start = time.time()
-
-        # print('SVM')
-        # print('Training Accuracy: ', svmAlg.score(x_train, y_train))
-        # print('Testing Accuracy: ', svmAlg.score(x_test, y_test))
-        # print('Training Time: ', trainTime, ' s')
-        # print('Execution Time: ', time.time()-start, ' s')
-
 	SVMAcc[gainIndex] = svmAlg.score(x_test, y_test)
-
-	start = time.time()
 
 	NearN = KNeighborsClassifier(10)
 	NearN.fit(x_train, y_train.ravel())
-
-	trainTime = time.time() - start
-	start = time.time()
-
-        # print('Nearest Neighbors')
-        # print('Training Accuracy: ', NearN.score(x_train, y_train))
-        # print('Testing Accuracy: ', NearN.score(x_test, y_test))
-        # print('Training Time: ', trainTime, ' s')
-        # print('Execution Time: ', time.time()-start, ' s')
-
 	NearNAcc[gainIndex] = NearN.score(x_test, y_test)
-
-	start = time.time()
 
 	NN = MLPClassifier(max_iter=10000)
 	NN.fit(x_train, y_train.ravel())
-
-	trainTime = time.time() - start
-	start = time.time()
-
-        # print('Neural Network')
-        # print('Training Accuracy: ', NN.score(x_train, y_train))
-        # print('Testing Accuracy: ', NN.score(x_test, y_test))
-        # print('Training Time: ', trainTime, ' s')
-        # print('Execution Time: ', time.time()-start, ' s')
-
 	NNAcc[gainIndex] = NN.score(x_test, y_test)
 
 
 	gainIndex += 1
 
-plt.figure(10)
+plt.figure()
 plt.plot(gainList, logRegAcc)
 plt.plot(gainList, SVMAcc)
 plt.plot(gainList, NearNAcc)
@@ -210,7 +158,7 @@ plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network'))
 plt.draw()
 plt.savefig('SimpleAccuracyCBC.pdf')
 
-plt.figure(11)
+plt.figure()
 plt.plot(1/gainList, logRegAcc)
 plt.plot(1/gainList, SVMAcc)
 plt.plot(1/gainList, NearNAcc)
@@ -237,4 +185,4 @@ plt.savefig('SimpleAccuracyDistanceCBC.pdf')
 # svd_plot(NearN, 3, 'Nearest Neighbors')
 # svd_plot(NN, 4, 'Neural Network')
 #
-# plt.show()
+plt.show()

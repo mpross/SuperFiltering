@@ -42,60 +42,62 @@ def read_data(index, gain):
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv1d(1, 20, 250)
-        self.pool = nn.MaxPool1d(2)
-        self.fc1 = nn.Linear(38460, 1)
+        self.conv1 = nn.Conv1d(1, 32, 32)
+        self.pool = nn.MaxPool1d(4)
+        self.fc1 = nn.Linear(16128, 1)
         self.out = nn.Sigmoid()
 
     def forward(self, x):
-        x = x.expand(1, 1, 4096)
+        x = x.expand(1, 1, 2049)
         x = self.pool(F.relu(self.conv1(x)))
-        x = x.view(-1, 38460)
+        x = x.view(-1, 16128)
         x = self.fc1(x)
         x = self.out(x)
         return x
 
 
-gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 10))
+gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
 
 
 gainIndex = 0
 
-gain = 0.5
+gain = 10.0
 
-x_train = np.zeros(4096)
+x_train = np.zeros(2049)
 y_train = np.array(0)
-x_test = np.zeros(4096)
+x_test = np.zeros(2049)
 y_test = np.array(0)
 
-for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/10):
-    if i<=len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2:
-        if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
-            os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
-                tim, wave_data, noise_data = read_data(i, gain)
+for i in range(1, len(os.listdir('./CBC Data/Gain' + str(gain) + '/'))):
+    if i <= len(os.listdir('./CBC Data/Gain' + str(gain) + '/')) / 2:
+        if os.path.isfile('CBC Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
+                os.path.isfile('CBC Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
+            tim, wave_data, noise_data = read_data(i, gain)
 
-    with np.errstate(divide='raise'):
-        try:
-            x_train = np.column_stack((x_train, wave_data))
+        f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
+        f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+
+        with np.errstate(divide='raise'):
+
+            x_train = np.column_stack((x_train, np.log10(P2.T)))
             y_train = np.append(y_train, 1)
-            x_train = np.column_stack((x_train, noise_data))
+            x_train = np.column_stack((x_train, np.log10(P1.T)))
             y_train = np.append(y_train, 0)
-        except FloatingPointError:
-            print('Error skipping this data point')
 
-    if i > len(os.listdir('./CBC Data/Gain'+str(gain)+'/')) / 2:
-        if os.path.isfile('CBC Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
-            os.path.isfile('CBC Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
-                tim, wave_data, noise_data = read_data(i, gain)
+    if i > len(os.listdir('./CBC Data/Gain' + str(gain) + '/')) / 2:
+        if os.path.isfile('CBC Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
+                os.path.isfile('CBC Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
+            tim, wave_data, noise_data = read_data(i, gain)
 
-    with np.errstate(divide='raise'):
-        try:
-            x_test = np.column_stack((x_test, wave_data))
+        f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
+        f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+
+        with np.errstate(divide='raise'):
+
+            x_test = np.column_stack((x_test, np.log10(P2.T)))
             y_test = np.append(y_test, 1)
-            x_test = np.column_stack((x_test, noise_data))
+            x_test = np.column_stack((x_test, np.log10(P1.T)))
             y_test = np.append(y_test, 0)
-        except FloatingPointError:
-            print('Error skipping this data point')
 
 
 train_data = torch.from_numpy((x_train[:, 1:].T-np.mean(x_train[:, 1:], axis=1))/np.std(x_train[:, 1:])).float()
@@ -106,7 +108,7 @@ test_labels = torch.from_numpy(y_test[1:]).float()
 net = Net()
 
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=2*10**-3, momentum=0.1)
+optimizer = optim.SGD(net.parameters(), lr=10**-2, momentum=0.1)
 
 epochLim = 100
 
@@ -125,9 +127,9 @@ for epoch in range(epochLim):
         optimizer.step()
 
         running_loss += loss.item()
-        if i % 100 == 99:
+        if i % 10 == 9:
             print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 100))
+                  (epoch + 1, i + 1, running_loss / 10))
             running_loss = 0.0
 
     correct = 0
