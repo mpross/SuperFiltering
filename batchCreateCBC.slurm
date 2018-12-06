@@ -25,16 +25,16 @@
 
 module load anaconda3_4.3.1
 
-python ./createData2.py 1 100 1 &
-python ./createData2.py 101 200 1 &
-python ./createData2.py 201 300 1 &
-python ./createData2.py 301 400 1 &
-python ./createData2.py 401 500 1 &
-python ./createData2.py 501 600 1 &
-python ./createData2.py 601 700 1 &
-python ./createData2.py 701 800 1 &
-python ./createData2.py 801 900 1 &
-python ./createData2.py 901 1000 1
+python ./createData_CBC.py 1 100 1 &
+python ./createData_CBC.py 101 200 1 &
+python ./createData_CBC.py 201 300 1 &
+python ./createData_CBC.py 301 400 1 &
+python ./createData_CBC.py 401 500 1 &
+python ./createData_CBC.py 501 600 1 &
+python ./createData_CBC.py 601 700 1 &
+python ./createData_CBC.py 701 800 1 &
+python ./createData_CBC.py 801 900 1 &
+python ./createData_CBC.py 901 1000 1
 
 
 
