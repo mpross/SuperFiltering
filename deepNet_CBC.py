@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from scipy import signal
 import os
+import h5py
 import itertools
 import time
 
@@ -55,7 +56,7 @@ class Net(nn.Module):
         x = self.out(x)
         return x
 
-gain = 0.001
+gain = 0.1
 
 x_train = np.zeros(2049)
 y_train = np.array(0)
@@ -90,10 +91,6 @@ for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
 
         tim, wave_data, noise_data = read_data(i, gain)
 
-        if i==600:
-            plt.plot(tim, wave_data, tim, noise_data)
-            plt.show()
-
         f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
         f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
 
@@ -113,7 +110,7 @@ test_labels = torch.from_numpy(y_test[1:]).float()
 net = Net()
 
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=10**-3, momentum=0.1)
+optimizer = optim.SGD(net.parameters(), lr=10**-5, momentum=0.1)
 
 epochLim = 10
 
@@ -141,9 +138,8 @@ for epoch in range(epochLim):
     with torch.no_grad():
         for j in range(len(test_data)):
             output = net(test_data[j])
-            predicted = round(output.data)
+            predicted = round(float(output.data))
             correct += (predicted == test_labels[j]).item()
-
     print('Test accuracy: %d %%' % (
             100 * correct / test_labels.size(0)))
     testAcc[epoch] = 100 * correct / test_labels.size(0)
@@ -151,21 +147,19 @@ for epoch in range(epochLim):
     correct = 0.0
     with torch.no_grad():
         for j in range(len(train_data)):
-            outputs = net(train_data[j])
-            predicted = round(outputs.data)
+            output = net(train_data[j])
+            predicted = round(float(output.data))
             correct += (predicted == train_labels[j]).item()
-
     print('Train accuracy: %d %%' % (
             100 * correct / train_labels.size(0)))
-
     trainAcc[epoch] = 100 * correct / train_labels.size(0)
 
 print('Finished Training')
 
 
-gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
+gainList = np.array((0.001, 0.002, 0.003, 0.004, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
 					 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
-#0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009,
+#, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009,
 
 gainAcc = np.zeros(gainList.size)
 gainIndex = 0
@@ -198,7 +192,7 @@ for gain in gainList:
     with torch.no_grad():
         for j in range(len(test_data)):
             output = net(test_data[j])
-            predicted = round(output.data)
+            predicted = round(float(output.data))
             correct += (predicted == test_labels[j]).item()
 
     print('Accuracy on '+str(1/gain)+' Mpc dataset: %d %%' % (
@@ -207,6 +201,22 @@ for gain in gainList:
 
     gainIndex += 1
 
+for filename in os.listdir('GW Events'):
+
+    f = h5py.File('GW Events/'+filename, 'r')
+    data = np.array(f['strain']['Strain'])
+    f.close()
+    predicted = 0.0
+    for i in range(0, len(data), 4096):
+        f, P = signal.welch(data[i:i+4096], fs=4096, nperseg=4096)
+
+        x = torch.from_numpy((np.log10(P) - np.mean(np.log10(P))) / np.std(np.log10(P))).float()
+
+        with torch.no_grad():
+            output = net(x)
+            predicted += round(float(output.data))
+
+    print(predicted)
 
 plt.figure()
 plt.plot(gainList, gainAcc)
@@ -230,5 +240,6 @@ plt.plot(range(epochLim), testAcc)
 plt.legend(('Training', 'Testing'))
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
-# plt.savefig('3_convNet.pdf')
+plt.draw()
+plt.savefig('NNTraining.pdf')
 plt.show()

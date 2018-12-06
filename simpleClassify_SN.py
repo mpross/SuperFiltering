@@ -41,35 +41,36 @@ def svd_plot(alg, index, name):
 
 def read_data(index, gain):
 
-    f = open('Supernova Data/Gain'+str(gain)+'/signal' + str(index) + '.dat', 'r')
+	f = open('Supernova Data/Gain'+str(gain)+'/signal' + str(index) + '.dat', 'r')
 
-    lines = f.read().split('\n')
-    l = lines.__len__() - 1
-    tim = np.zeros(l)
-    wave_data = np.zeros(l)
-    noise_data = np.zeros(l)
+	lines = f.read().split('\n')
+	l = lines.__len__() - 1
 
-    for i in range(0, l):
+	tim = np.zeros(l)
+	wave_data = np.zeros(l)
+	noise_data = np.zeros(l)
 
-        if not (np.isnan(float(lines[i].split(' ')[1]))):
-            tim[i] = float(lines[i].split(' ')[0])
-            wave_data[i] = float(lines[i].split(' ')[1])*10**25
+	for i in range(0, l):
 
-    f.close()
+		if not (np.isnan(float(lines[i].split(' ')[1]))):
+			tim[i] = float(lines[i].split(' ')[0])
+			wave_data[i] = float(lines[i].split(' ')[1])*10**25
 
-    f = open('Supernova Data/Gain'+str(gain)+'/noise' + str(index) + '.dat', 'r')
-    lines = f.read().split('\n')
-    l = lines.__len__() - 1
-    for i in range(0, l):
-        if not(np.isnan(float(lines[i].split(' ')[1]))):
-            noise_data[i] = float(lines[i].split(' ')[1])*10**25
+	f.close()
 
-    f.close()
+	f = open('Supernova Data/Gain'+str(gain)+'/noise' + str(index) + '.dat', 'r')
+	lines = f.read().split('\n')
 
-    return tim, wave_data, noise_data
+	for i in range(0, l):
+		if not(np.isnan(float(lines[i].split(' ')[1]))):
+			noise_data[i] = float(lines[i].split(' ')[1])*10**25
+
+	f.close()
+
+	return tim, wave_data, noise_data
 
 
-gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08 ,0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
+gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7))#, 0.8, 0.9, 1.0, 10.0))
 
 NNAcc = np.zeros(gainList.size)
 NearNAcc = np.zeros(gainList.size)
@@ -81,11 +82,11 @@ gainIndex = 0
 for gain in gainList:
 
 	print(str(gainList[gainIndex]))
-	#x_train = np.zeros(129)
-	x_train = np.zeros(2049)
+	x_train = np.zeros(129)
+	# x_train = np.zeros(2049)
 	y_train = np.array(0)
-	#x_test = np.zeros(129)
-	x_test = np.zeros(2049)
+	x_test = np.zeros(129)
+	# x_test = np.zeros(2049)
 	y_test = np.array(0)
 
 	for i in range(1, len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/2+1):
@@ -94,8 +95,8 @@ for gain in gainList:
 				os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
 					tim, wave_data, noise_data = read_data(i, gain)
 
-			f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
-			f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+			f, P1 = signal.welch(noise_data, fs=4096)#, nperseg=4096)
+			f, P2 = signal.welch(wave_data, fs=4096)#, nperseg=4096)
 
 			with np.errstate(divide='raise'):
 				try:
@@ -111,8 +112,8 @@ for gain in gainList:
 				os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
 					tim, wave_data, noise_data = read_data(i, gain)
 
-			f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096)
-			f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096)
+			f, P1 = signal.welch(noise_data, fs=4096)#, nperseg=4096)
+			f, P2 = signal.welch(wave_data, fs=4096)#, nperseg=4096)
 
 			with np.errstate(divide='raise'):
 				try:
@@ -145,6 +146,7 @@ for gain in gainList:
 	NN = MLPClassifier(max_iter=10000)
 	NN.fit(x_train, y_train.ravel())
 	NNAcc[gainIndex] = NN.score(x_test, y_test)
+	print(NN.score(x_test, y_test))
 
 	gainIndex += 1
 
