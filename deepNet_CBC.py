@@ -186,7 +186,7 @@ for gain in gainList:
                 y_test = np.append(y_test, 0)
 
     # Normalize and convert to tensor
-    test_data = torch.from_numpy(x_test[:, 1:].T - np.mean(x_test[:, 1:], axis=1) / np.std(x_test[:, 1:])).float()
+    test_data = torch.from_numpy((x_test[:, 1:].T - np.mean(x_test[:, 1:], axis=1)) / np.std(x_test[:, 1:])).float()
     test_labels = torch.from_numpy(y_test[1:]).float()
 
     correct = 0.0

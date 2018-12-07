@@ -47,15 +47,15 @@ def read_data(index, gain):
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv1d(1, 1000, 100)
-        self.pool = nn.MaxPool1d(1)
-        self.fc1 = nn.Linear(30000, 1)
+        self.conv1 = nn.Conv1d(1, 1024, 64)
+        self.pool = nn.MaxPool1d(2)
+        self.fc1 = nn.Linear(33792, 1)
         self.out = nn.Sigmoid()
 
     def forward(self, x):
         x = x.expand(1, 1, 129)
         x = self.pool(F.relu(self.conv1(x)))
-        x = x.view(-1, 30000)
+        x = x.view(-1, 33792)
         x = self.fc1(x)
         x = self.out(x)
         return x
@@ -109,17 +109,18 @@ for i in range(1, len(os.listdir('./Supernova Data/Gain' + str(gain) + '/'))/2+1
             except FloatingPointError:
                 print('Error skipping this data point')
 
-
+# Cut off first zero, normalize, and turn into tensor
 train_data = torch.from_numpy((x_train[:, 1:].T-np.mean(x_train[:, 1:], axis=1))/np.std(x_train[:, 1:])).float()
 test_data = torch.from_numpy((x_test[:, 1:].T-np.mean(x_test[:, 1:], axis=1))/np.std(x_test[:, 1:])).float()
 train_labels = torch.from_numpy(y_train[1:]).float()
 test_labels = torch.from_numpy(y_test[1:]).float()
 
+# Net initialization, loss and optimizer definition
 net = Net()
-
 criterion = nn.BCELoss()
 optimizer = optim.SGD(net.parameters(), lr=5*10**-3, momentum=0.5)
 
+# Net training
 epochLim = 200
 
 testAcc = np.zeros(epochLim)
@@ -167,6 +168,7 @@ for epoch in range(epochLim):
 
 print('Finished Training')
 
+# Apply trained net to other data sets with different gains
 gainList = np.array((0.01, 0.02, 0.03, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 10.0))
 
 gainAcc = np.zeros(gainList.size)
@@ -192,9 +194,8 @@ for gain in gainList:
                 x_test = np.column_stack((x_test, np.log10(P1.T)))
                 y_test = np.append(y_test, 0)
 
-
-    test_data = torch.from_numpy(
-        (x_test[:, 1:].T - np.mean(x_test[:, 1:], axis=1)) / np.std(x_test[:, 1:])).float()
+    # Normalize and convert to tensor
+    test_data = torch.from_numpy((x_test[:, 1:].T - np.mean(x_test[:, 1:], axis=1)) / np.std(x_test[:, 1:])).float()
     test_labels = torch.from_numpy(y_test[1:]).float()
 
     correct = 0.0
@@ -204,11 +205,13 @@ for gain in gainList:
             predicted = round(float(output.data))
             correct += (predicted == test_labels[j]).item()
 
-    print('Accuracy on '+str(1/gain)+' Mpc dataset: %d %%' % (
+    print('Accuracy on '+str(1/gain)+' kpc dataset: %d %%' % (
             100 * correct / test_labels.size(0)))
     gainAcc[gainIndex] = correct / test_labels.size(0)
 
     gainIndex += 1
+
+# Apply a selection of simple methods from sklearn to the data to compare
 
 NNAcc = np.zeros(gainList.size)
 NearNAcc = np.zeros(gainList.size)
@@ -225,9 +228,10 @@ for gain in gainList:
     y_test = np.array(0)
 
     for i in range(1, len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/2+1):
-        if i<=len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/4:
+        if i <= len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/4:
             if os.path.isfile('Supernova Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
-                os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
+                    os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
+
                     tim, wave_data, noise_data = read_data(i, gain)
                 
             # Power spectra
@@ -236,7 +240,7 @@ for gain in gainList:
 
             with np.errstate(divide='raise'):
                 try:
-                    # Data stacking, 1 GW, 0 noise
+                    # Data stacking, 1 GW, -1 noise
                     x_train = np.column_stack((x_train, np.log10(P2)))
                     y_train = np.append(y_train, 1)
                     x_train = np.column_stack((x_train, np.log10(P1)))
@@ -256,7 +260,7 @@ for gain in gainList:
 
             with np.errstate(divide='raise'):
                 try:
-                    # Data stacking, 1 GW, 0 noise
+                    # Data stacking, 1 GW, -1 noise
                     x_test = np.column_stack((x_test, np.log10(P2)))
                     y_test = np.append(y_test, 1)
                     x_test = np.column_stack((x_test, np.log10(P1)))
@@ -264,12 +268,13 @@ for gain in gainList:
                 except FloatingPointError:
                     print('Error skipping this data point')
 
-
+    # Cut off first zero, normalize, and turn into tensor
     x_train = (x_train[:, 1:].T-np.mean(x_train[:, 1:], axis=1))/np.std(x_train)
     x_test = (x_test[:, 1:].T-np.mean(x_test[:, 1:], axis=1))/np.std(x_test)
     y_train = y_train[1:]
     y_test = y_test[1:]
 
+    # Train and test algorithms
     logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=10000)
     logReg.fit(x_train, y_train.ravel())
     logRegAcc[gainIndex] = logReg.score(x_test, y_test)
@@ -300,7 +305,7 @@ plt.xlabel('Gain')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network', 'Convolutional Neural Network'))
 plt.grid(True)
 plt.draw()
-plt.savefig('SimpleAccuracySN.pdf')
+plt.savefig('AccuracySN.pdf')
 
 plt.figure()
 plt.plot(10/gainList, logRegAcc)
@@ -314,7 +319,7 @@ plt.xlabel('Distance (kpc)')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network', 'Convolutional Neural Network'))
 plt.grid(True)
 plt.draw()
-plt.savefig('SimpleAccuracyDistanceSN.pdf')
+plt.savefig('AccuracyDistanceSN.pdf')
 
 plt.figure()
 plt.plot(range(epochLim), trainAcc)
