@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 
 def read_data(index):
 
-    f = open('Supernova Data/Gain1.0/signal' + str(index) + '.dat', 'r')
+    f = open('CBC Data/Gain0.001/signal' + str(index) + '.dat', 'r')
 
     lines = f.read().split('\n')
     l = lines.__len__() - 1
@@ -19,7 +19,7 @@ def read_data(index):
 
     f.close()
 
-    f = open('Supernova Data/Gain1.0/noise' + str(index) + '.dat', 'r')
+    f = open('CBC Data/Gain0.001/noise' + str(index) + '.dat', 'r')
     lines = f.read().split('\n')
     for i in range(0, l):
         noise_data[i] = float(lines[i].split(' ')[1])

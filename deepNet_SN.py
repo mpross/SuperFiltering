@@ -47,22 +47,22 @@ def read_data(index, gain):
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv1d(1, 1024, 64)
+        self.conv1 = nn.Conv1d(1, 64, 16)
         self.pool = nn.MaxPool1d(2)
-        self.fc1 = nn.Linear(33792, 1)
+        self.fc1 = nn.Linear(3648, 1)
         self.out = nn.Sigmoid()
 
     def forward(self, x):
         x = x.expand(1, 1, 129)
         x = self.pool(F.relu(self.conv1(x)))
-        x = x.view(-1, 33792)
+        x = x.view(-1, 3648)
         x = self.fc1(x)
         x = self.out(x)
         return x
 
 
 # Gain to train the CNN on
-gain = 0.3
+gain = 0.2
 
 x_train = np.zeros(129)
 y_train = np.array(0)
@@ -118,10 +118,10 @@ test_labels = torch.from_numpy(y_test[1:]).float()
 # Net initialization, loss and optimizer definition
 net = Net()
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=5*10**-3, momentum=0.5)
+optimizer = optim.SGD(net.parameters(), lr=7*10**-3, momentum=0.5)
 
 # Net training
-epochLim = 200
+epochLim = 100
 
 testAcc = np.zeros(epochLim)
 trainAcc = np.zeros(epochLim)
@@ -220,6 +220,50 @@ SVMAcc = np.zeros(gainList.size)
 
 gainIndex = 0
 
+x_train = np.zeros(129)
+y_train = np.array(0)
+x_test = np.zeros(129)
+y_test = np.array(0)
+
+gain = 0.1
+
+for i in range(1, len(os.listdir('./Supernova Data/Gain' + str(gain) + '/')) / 2 + 1):
+    if i <= len(os.listdir('./Supernova Data/Gain' + str(gain) + '/')) / 4:
+        if os.path.isfile('Supernova Data/Gain' + str(gain) + '/signal' + str(i) + '.dat') & \
+                os.path.isfile('Supernova Data/Gain' + str(gain) + '/noise' + str(i) + '.dat'):
+            tim, wave_data, noise_data = read_data(i, gain)
+
+        # Power spectra
+        f, P1 = signal.welch(noise_data, fs=4096)
+        f, P2 = signal.welch(wave_data, fs=4096)
+
+        with np.errstate(divide='raise'):
+            try:
+                # Data stacking, 1 GW, -1 noise
+                x_train = np.column_stack((x_train, np.log10(P2)))
+                y_train = np.append(y_train, 1)
+                x_train = np.column_stack((x_train, np.log10(P1)))
+                y_train = np.append(y_train, -1)
+            except FloatingPointError:
+                print('Error skipping this data point')
+
+# Cut off first zero, normalize, and turn into tensor
+x_train = (x_train[:, 1:].T - np.mean(x_train[:, 1:], axis=1)) / np.std(x_train)
+y_train = y_train[1:]
+
+# Train algorithms
+logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=10000)
+logReg.fit(x_train, y_train.ravel())
+
+svmAlg = svm.SVC(gamma='scale')
+svmAlg.fit(x_train, y_train.ravel())
+
+NearN = KNeighborsClassifier(10)
+NearN.fit(x_train, y_train.ravel())
+
+NN = MLPClassifier(max_iter=10000)
+NN.fit(x_train, y_train.ravel())
+
 for gain in gainList:
     print(str(gain))
     x_train = np.zeros(129)
@@ -228,27 +272,7 @@ for gain in gainList:
     y_test = np.array(0)
 
     for i in range(1, len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/2+1):
-        if i <= len(os.listdir('./Supernova Data/Gain'+str(gain)+'/'))/4:
-            if os.path.isfile('Supernova Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
-                    os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
 
-                    tim, wave_data, noise_data = read_data(i, gain)
-                
-            # Power spectra
-            f, P1 = signal.welch(noise_data, fs=4096)
-            f, P2 = signal.welch(wave_data, fs=4096)
-
-            with np.errstate(divide='raise'):
-                try:
-                    # Data stacking, 1 GW, -1 noise
-                    x_train = np.column_stack((x_train, np.log10(P2)))
-                    y_train = np.append(y_train, 1)
-                    x_train = np.column_stack((x_train, np.log10(P1)))
-                    y_train = np.append(y_train, -1)
-                except FloatingPointError:
-                    print('Error skipping this data point')
-
-        if i > len(os.listdir('./Supernova Data/Gain'+str(gain)+'/')) / 4:
             if os.path.isfile('Supernova Data/Gain'+str(gain)+'/signal' + str(i) + '.dat') & \
                     os.path.isfile('Supernova Data/Gain'+str(gain)+'/noise' + str(i) + '.dat'):
                 
@@ -269,26 +293,16 @@ for gain in gainList:
                     print('Error skipping this data point')
 
     # Cut off first zero, normalize, and turn into tensor
-    x_train = (x_train[:, 1:].T-np.mean(x_train[:, 1:], axis=1))/np.std(x_train)
     x_test = (x_test[:, 1:].T-np.mean(x_test[:, 1:], axis=1))/np.std(x_test)
-    y_train = y_train[1:]
     y_test = y_test[1:]
 
-    # Train and test algorithms
-    logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=10000)
-    logReg.fit(x_train, y_train.ravel())
+    # Test algorithms
     logRegAcc[gainIndex] = logReg.score(x_test, y_test)
 
-    svmAlg = svm.SVC(gamma='scale')
-    svmAlg.fit(x_train, y_train.ravel())
     SVMAcc[gainIndex] = svmAlg.score(x_test, y_test)
 
-    NearN = KNeighborsClassifier(10)
-    NearN.fit(x_train, y_train.ravel())
     NearNAcc[gainIndex] = NearN.score(x_test, y_test)
 
-    NN = MLPClassifier(max_iter=10000)
-    NN.fit(x_train, y_train.ravel())
     NNAcc[gainIndex] = NN.score(x_test, y_test)
 
     gainIndex += 1

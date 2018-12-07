@@ -63,7 +63,7 @@ class Net(nn.Module):
 
 
 # Gain to train the CNN on
-gain = 1.0
+gain = 0.5
 
 x_train = np.zeros(513)
 y_train = np.array(0)
@@ -112,7 +112,7 @@ test_labels = torch.from_numpy(y_test[1:]).float()
 # Net initialization, loss and optimizer definition
 net = Net()
 criterion = nn.BCELoss()
-optimizer = optim.SGD(net.parameters(), lr=2*10**-6, momentum=0.1)
+optimizer = optim.SGD(net.parameters(), lr=10**-6, momentum=0)
 
 # Net training
 epochLim = 25
@@ -225,7 +225,7 @@ for filename in os.listdir('GW Events'):
             predicted += round(float(output.data))
 
         if (round(float(output.data)) == 1.0):
-            f = open('GW Events/event' + str(eventCounter) + '.dat', 'w+')
+            f = open('Found Events/event' + str(eventCounter) + '.dat', 'w+')
 
             for j in range(4096):
                 f.write(str(data[i+j]) + '\n')
@@ -244,6 +244,43 @@ SVMAcc = np.zeros(gainList.size)
 
 gainIndex = 0
 
+gain = 0.5
+
+x_train = np.zeros(513)
+y_train = np.array(0)
+for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
+    if i <= len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/4:
+
+        tim, wave_data, noise_data = read_data(i, gain)
+
+        # Power spectra
+        f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096/4)
+        f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096/4)
+
+        with np.errstate(divide='raise'):
+            # Data stacking, 1 GW, -1 noise
+            x_train = np.column_stack((x_train, np.log10(P2.T)))
+            y_train = np.append(y_train, 1)
+            x_train = np.column_stack((x_train, np.log10(P1.T)))
+            y_train = np.append(y_train, -1)
+
+# Cut off first zero, normalize, and turn into tensor
+x_train = (x_train[:, 1:].T - np.mean(x_train[:, 1:], axis=1)) / np.std(x_train)
+y_train = y_train[1:]
+
+# Train and test algorithms
+logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=10000)
+logReg.fit(x_train, y_train.ravel())
+
+svmAlg = svm.SVC(gamma='scale')
+svmAlg.fit(x_train, y_train.ravel())
+
+NearN = KNeighborsClassifier(20)
+NearN.fit(x_train, y_train.ravel())
+
+NN = MLPClassifier(max_iter=10000)
+NN.fit(x_train, y_train.ravel())
+
 for gain in gainList:
 
     print(str(gainList[gainIndex]))
@@ -252,56 +289,31 @@ for gain in gainList:
     x_test = np.zeros(513)
     y_test = np.array(0)
     for i in range(1, len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/2+1):
-        if i <= len(os.listdir('./CBC Data/Gain'+str(gain)+'/'))/4:
 
-            tim, wave_data, noise_data = read_data(i, gain)
+        tim, wave_data, noise_data = read_data(i, gain)
 
-            # Power spectra
-            f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096/4)
-            f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096/4)
+        # Power spectra
+        f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096/4)
+        f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096/4)
 
-            with np.errstate(divide='raise'):
-                # Data stacking, 1 GW, -1 noise
-                x_train = np.column_stack((x_train, np.log10(P2.T)))
-                y_train = np.append(y_train, 1)
-                x_train = np.column_stack((x_train, np.log10(P1.T)))
-                y_train = np.append(y_train, -1)
-
-        if i > len(os.listdir('./CBC Data/Gain'+str(gain)+'/')) / 4:
-
-            tim, wave_data, noise_data = read_data(i, gain)
-            # Power spectra
-            f, P1 = signal.welch(noise_data, fs=4096, nperseg=4096/4)
-            f, P2 = signal.welch(wave_data, fs=4096, nperseg=4096/4)
-
-            with np.errstate(divide='raise'):
-                # Data stacking, 1 GW, -1 noise
-                x_test = np.column_stack((x_test, np.log10(P2.T)))
-                y_test = np.append(y_test, 1)
-                x_test = np.column_stack((x_test, np.log10(P1.T)))
-                y_test = np.append(y_test, -1)
+        with np.errstate(divide='raise'):
+            # Data stacking, 1 GW, -1 noise
+            x_test = np.column_stack((x_test, np.log10(P2.T)))
+            y_test = np.append(y_test, 1)
+            x_test = np.column_stack((x_test, np.log10(P1.T)))
+            y_test = np.append(y_test, -1)
 
     # Cut off first zero, normalize, and turn into tensor
-    x_train = (x_train[:, 1:].T - np.mean(x_train[:, 1:], axis=1)) / np.std(x_train)
     x_test = (x_test[:, 1:].T - np.mean(x_test[:, 1:], axis=1)) / np.std(x_test)
-    y_train = y_train[1:]
     y_test = y_test[1:]
 
     # Train and test algorithms
-    logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=10000)
-    logReg.fit(x_train, y_train.ravel())
     logRegAcc[gainIndex] = logReg.score(x_test, y_test)
 
-    svmAlg = svm.SVC(gamma='scale')
-    svmAlg.fit(x_train, y_train.ravel())
     SVMAcc[gainIndex] = svmAlg.score(x_test, y_test)
 
-    NearN = KNeighborsClassifier(2)
-    NearN.fit(x_train, y_train.ravel())
     NearNAcc[gainIndex] = NearN.score(x_test, y_test)
 
-    NN = MLPClassifier(max_iter=10000)
-    NN.fit(x_train, y_train.ravel())
     NNAcc[gainIndex] = NN.score(x_test, y_test)
 
     print(NNAcc[gainIndex])
@@ -319,19 +331,21 @@ plt.xscale('log')
 plt.ylabel('Accuracy')
 plt.xlabel('Gain')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network', 'Convolutional Neural Network'))
+plt.grid(True)
 plt.draw()
 plt.savefig('AccuracyCBC.pdf')
 
 plt.figure()
-plt.plot(10/gainList, logRegAcc)
-plt.plot(10/gainList, SVMAcc)
-plt.plot(10/gainList, NearNAcc)
-plt.plot(10/gainList, NNAcc)
-plt.plot(10/gainList, gainAcc)
+plt.plot(1/gainList, logRegAcc)
+plt.plot(1/gainList, SVMAcc)
+plt.plot(1/gainList, NearNAcc)
+plt.plot(1/gainList, NNAcc)
+plt.plot(1/gainList, gainAcc)
 plt.xscale('log')
 plt.ylabel('Accuracy')
-plt.xlabel('Distance (kpc)')
+plt.xlabel('Distance (Mpc)')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network', 'Convolutional Neural Network'))
+plt.grid(True)
 plt.draw()
 plt.savefig('AccuracyDistanceCBC.pdf')
 
@@ -341,6 +355,7 @@ plt.plot(range(epochLim), testAcc)
 plt.legend(('Training', 'Testing'))
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
+plt.grid(True)
 plt.draw()
 plt.savefig('NNTrainingCBC.pdf')
 plt.show()
