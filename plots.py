@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
+from sklearn.decomposition import PCA
 
 def read_data(index):
 
@@ -26,6 +27,7 @@ def read_data(index):
     f.close()
 
     return time, wave_data, noise_data
+
 
 
 time, wave_data, noise_data = read_data(np.random.randint(1,138))
@@ -61,15 +63,31 @@ plt.ylim([10, 10**3])
 plt.draw()
 
 plt.figure(4)
-f, Pxx_den = signal.welch(wave_data, fs=sampF, nperseg=4096/4)
-plt.loglog(f, Pxx_den)
-f, Pxx_den = signal.welch(noise_data, fs=sampF, nperseg=4096/4)
-plt.loglog(f, Pxx_den)
+f, P1 = signal.welch(wave_data, fs=sampF, nperseg=4096/4)
+plt.loglog(f, P1)
+f, P2 = signal.welch(noise_data, fs=sampF, nperseg=4096/4)
+plt.loglog(f, P2)
 
 # plt.xlim([10, 10**3])
 plt.xlabel('Frequency [Hz]')
 plt.ylabel('PSD [strain^2/Hz]')
 plt.grid(True,'both')
 plt.draw()
+
+# x_train = np.concatenate((P1, P2)).reshape(-1,1)
+#
+# pca = PCA(n_components=2).fit(x_train.T)
+#
+# plt.figure(5)
+#
+# for i in range(len(x_train)/2):
+#     plt.plot(pca.transform(x_train)[i, 0], pca.transform(x_train)[i, 1], '.')
+#
+# for i in range(len(x_train) / 2,len(x_train)):
+#     plt.plot(pca.transform(x_train)[i, 0], pca.transform(x_train)[i, 1], 'o')
+#
+# plt.xlabel('Component 1')
+# plt.ylabel('Component 2')
+# plt.draw()
 
 plt.show()

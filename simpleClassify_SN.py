@@ -16,29 +16,6 @@ from sklearn.neural_network import MLPClassifier
 
 
 
-def svd_plot(alg, index, name):
-    x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
-    y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
-    h = .02
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
-    Z = alg.predict(np.c_[xx.ravel(), yy.ravel()])
-
-    Z = Z.reshape(xx.shape)
-
-    colors = itertools.cycle(["r", "b"])
-
-    plt.figure(index)
-    plt.pcolormesh(xx, yy, Z, cmap=plt.cm.Paired)
-
-    for i in range(len(x_train)):
-        plt.plot(pca.transform(x_train)[i, 0], pca.transform(x_train)[i, 1], '.', color=next(colors))
-
-    plt.xlabel('Component 1')
-    plt.ylabel('Component 2')
-    plt.title(name)
-    plt.draw()
-
-
 def read_data(index, gain):
 
 	f = open('Supernova Data/Gain'+str(gain)+'/signal' + str(index) + '.dat', 'r')
@@ -134,7 +111,6 @@ for gain in gainList:
 	logReg.fit(x_train, y_train.ravel())
 	logRegAcc[gainIndex] = logReg.score(x_test, y_test)
 
-
 	svmAlg = svm.SVC(gamma='scale')
 	svmAlg.fit(x_train, y_train.ravel())
 	SVMAcc[gainIndex] = svmAlg.score(x_test, y_test)
@@ -176,15 +152,7 @@ plt.savefig('SimpleAccuracyDistanceSN.pdf')
 
 
 #
-# pca = PCA(n_components=2).fit(x_train)
-# X = pca.transform(x_train)
 #
-# logReg = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X, y_train.ravel())
-# svmAlg = svm.SVC(gamma='scale').fit(X, y_train.ravel())
-# NearN = KNeighborsClassifier(1).fit(X, y_train.ravel())
-# NN = MLPClassifier(max_iter=1000).fit(X, y_train.ravel())
-#
-# svd_plot(logReg, 1, 'Logistic Regression')
 # svd_plot(svmAlg, 2, 'SVM')
 # svd_plot(NearN, 3, 'Nearest Neighbors')
 # svd_plot(NN, 4, 'Neural Network')
