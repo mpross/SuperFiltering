@@ -204,6 +204,7 @@ for gain in gainList:
 
 
 # Search data with known GW events
+eventCounter = 0
 for filename in os.listdir('GW Events'):
 
     # Read data
@@ -222,6 +223,15 @@ for filename in os.listdir('GW Events'):
         with torch.no_grad():
             output = net(x)
             predicted += round(float(output.data))
+
+        if (round(float(output.data)) == 1.0):
+            f = open('GW Events/event' + str(eventCounter) + '.dat', 'w+')
+
+            for j in range(4096):
+                f.write(str(data[i+j]) + '\n')
+
+            f.close()
+            eventCounter += 1
 
     print('GW events found: ' + str(predicted))
 
@@ -294,6 +304,8 @@ for gain in gainList:
     NN.fit(x_train, y_train.ravel())
     NNAcc[gainIndex] = NN.score(x_test, y_test)
 
+    print(NNAcc[gainIndex])
+
     gainIndex += 1
 
 
@@ -308,7 +320,7 @@ plt.ylabel('Accuracy')
 plt.xlabel('Gain')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network', 'Convolutional Neural Network'))
 plt.draw()
-plt.savefig('SimpleAccuracyCBC.pdf')
+plt.savefig('AccuracyCBC.pdf')
 
 plt.figure()
 plt.plot(10/gainList, logRegAcc)
@@ -321,7 +333,7 @@ plt.ylabel('Accuracy')
 plt.xlabel('Distance (kpc)')
 plt.legend(('Logistic Regression', 'SVM', 'Nearest Neighbor', 'Neural Network', 'Convolutional Neural Network'))
 plt.draw()
-plt.savefig('SimpleAccuracyDistanceCBC.pdf')
+plt.savefig('AccuracyDistanceCBC.pdf')
 
 plt.figure()
 plt.plot(range(epochLim), trainAcc)
